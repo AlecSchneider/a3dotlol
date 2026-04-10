@@ -1,37 +1,119 @@
 import Link from "next/link";
 
+const links = [
+  {
+    href: "https://discord.gg/zhxTK8wg",
+    label: "discord",
+    external: true,
+  },
+  {
+    href: "https://github.com/alecschneider",
+    label: "github",
+    external: true,
+  },
+  {
+    href: "https://x.com/alechacks",
+    label: "x",
+    external: true,
+  },
+  {
+    href: "https://www.instagram.com/alecschneider.dev/",
+    label: "instagram",
+    external: true,
+  },
+  {
+    href: "https://www.tiktok.com/@alecschneider.dev",
+    label: "tiktok",
+    external: true,
+  },
+  {
+    href: "https://www.linkedin.com/in/alecschneider",
+    label: "linkedin",
+    external: true,
+  },
+  {
+    href: "mailto:alec@a3.lol",
+    label: "email",
+    external: false,
+  },
+];
+
+const footerLinks = [
+  { href: "https://github.com/alecschneider", label: "gh" },
+  { href: "https://x.com/alechacks", label: "x" },
+  { href: "mailto:alec@a3.lol", label: "mail" },
+];
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-        <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-          Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-        </h1>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/usage/first-steps"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">First Steps →</h3>
-            <div className="text-lg">
-              Just the basics - Everything you need to know to set up your
-              database and authentication.
-            </div>
-          </Link>
-          <Link
-            className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 text-white hover:bg-white/20"
-            href="https://create.t3.gg/en/introduction"
-            target="_blank"
-          >
-            <h3 className="text-2xl font-bold">Documentation →</h3>
-            <div className="text-lg">
-              Learn more about Create T3 App, the libraries it uses, and how to
-              deploy it.
-            </div>
-          </Link>
+    <main className="min-h-screen bg-[var(--page)] text-[var(--text-primary)]">
+      <div className="relative flex min-h-screen flex-col">
+        <div className="relative flex min-h-screen flex-1 items-center justify-center px-6">
+          <div className="homepage-glow" />
+
+          <div className="relative z-10 w-full max-w-xs">
+            <header className="homepage-fade mb-16 [animation-delay:0ms]">
+              <h1 className="text-xl tracking-tight text-[var(--text-primary)]">
+                alec
+              </h1>
+              <p className="mt-1 text-sm text-[var(--text-muted)]">
+                vibe coding apps
+              </p>
+            </header>
+
+            <nav className="flex flex-col">
+              {links.map((link, index) => (
+                <Link
+                  key={link.label}
+                  className="homepage-link group homepage-fade relative flex items-center justify-between py-3"
+                  href={link.href}
+                  target={link.external ? "_blank" : undefined}
+                  rel={link.external ? "noreferrer" : undefined}
+                  style={{ animationDelay: `${(index + 1) * 60}ms` }}
+                >
+                  <span className="text-[var(--text-subtle)] transition-colors duration-200 group-hover:text-[var(--text-primary)]">
+                    {link.label}
+                  </span>
+                  <span className="text-[var(--text-muted)] opacity-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100">
+                    <ArrowIcon />
+                  </span>
+                  <span className="absolute right-0 bottom-2 left-0 h-px origin-left scale-x-0 bg-[var(--accent-line)] transition-transform duration-300 ease-out group-hover:scale-x-100" />
+                </Link>
+              ))}
+            </nav>
+          </div>
         </div>
+
+        <footer className="border-t border-white/5 px-6 py-6">
+          <div className="mx-auto flex w-full max-w-xs items-center justify-center gap-6 text-sm tracking-[0.22em] text-[var(--text-muted)] uppercase">
+            {footerLinks.map((link) => (
+              <Link
+                key={link.label}
+                className="transition-colors duration-200 hover:text-[var(--text-primary)]"
+                href={link.href}
+                target={link.href.startsWith("http") ? "_blank" : undefined}
+                rel={link.href.startsWith("http") ? "noreferrer" : undefined}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+        </footer>
       </div>
     </main>
+  );
+}
+
+function ArrowIcon() {
+  return (
+    <svg
+      aria-hidden="true"
+      className="h-3.5 w-3.5"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+    >
+      <path d="M11 3a1 1 0 1 0 0 2h2.586L7.293 11.293a1 1 0 1 0 1.414 1.414L15 6.414V9a1 1 0 1 0 2 0V4a1 1 0 0 0-1-1h-5Z" />
+      <path d="M5 5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-3a1 1 0 1 0-2 0v3H5V7h3a1 1 0 0 0 0-2H5Z" />
+    </svg>
   );
 }

@@ -1,6 +1,56 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "IBM Plex Mono", "SFMono-Regular", "SF Mono", Consolas,
+    "Liberation Mono", Menlo, monospace;
+}
+
+:root {
+  --page: #050505;
+  --text-primary: #f5f5f5;
+  --text-subtle: rgba(245, 245, 245, 0.72);
+  --text-muted: rgba(245, 245, 245, 0.42);
+  --accent-line: rgba(34, 211, 238, 0.4);
+}
+
+html {
+  background-color: var(--page);
+}
+
+body {
+  min-height: 100vh;
+  background-color: var(--page);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+.homepage-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 0;
+  height: 37.5rem;
+  width: 37.5rem;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  opacity: 0.03;
+  background: radial-gradient(circle, #22d3ee 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.homepage-fade {
+  opacity: 0;
+  animation: fade-in-up 600ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
