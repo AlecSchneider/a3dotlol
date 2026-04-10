@@ -38,12 +38,6 @@ const links = [
   },
 ];
 
-const footerLinks = [
-  { href: "https://github.com/alecschneider", label: "gh" },
-  { href: "https://x.com/alechacks", label: "x" },
-  { href: "mailto:alec@a3.lol", label: "mail" },
-];
-
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--page)] text-[var(--text-primary)]">
@@ -83,22 +77,6 @@ export default function HomePage() {
             </nav>
           </div>
         </div>
-
-        <footer className="border-t border-white/5 px-6 py-6">
-          <div className="mx-auto flex w-full max-w-xs items-center justify-center gap-6 text-sm tracking-[0.22em] text-[var(--text-muted)] uppercase">
-            {footerLinks.map((link) => (
-              <Link
-                key={link.label}
-                className="transition-colors duration-200 hover:text-[var(--text-primary)]"
-                href={link.href}
-                target={link.href.startsWith("http") ? "_blank" : undefined}
-                rel={link.href.startsWith("http") ? "noreferrer" : undefined}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </div>
-        </footer>
       </div>
     </main>
   );
