@@ -42,7 +42,7 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--page)] text-[var(--text-primary)]">
       <div className="relative flex min-h-screen flex-col">
-        <div className="relative flex min-h-screen flex-1 items-center justify-center px-6">
+        <div className="relative flex flex-1 items-center justify-center px-6 py-16">
           <div className="homepage-glow" />
 
           <div className="relative z-10 w-full max-w-xs">
@@ -77,6 +77,17 @@ export default function HomePage() {
             </nav>
           </div>
         </div>
+
+        <footer className="homepage-fade px-6 pb-6 [animation-delay:420ms]">
+          <div className="mx-auto w-full max-w-xs">
+            <Link
+              className="text-xs text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
+              href="/privacy"
+            >
+              privacy policy
+            </Link>
+          </div>
+        </footer>
       </div>
     </main>
   );

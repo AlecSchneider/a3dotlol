@@ -1,7 +1,8 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
+
+import { AnalyticsConsent } from "~/components/analytics-consent";
 
 export const metadata: Metadata = {
   title: "a3.lol",
@@ -16,7 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
-        <Analytics />
+        <AnalyticsConsent />
       </body>
     </html>
   );
