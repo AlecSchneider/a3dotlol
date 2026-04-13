@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { NewsletterSignup } from "~/components/newsletter-signup";
+
 const links = [
   {
     href: "https://discord.gg/zhxTK8wg",
@@ -55,6 +57,8 @@ export default function HomePage() {
               </p>
             </header>
 
+            <NewsletterSignup />
+
             <nav className="flex flex-col">
               {links.map((link, index) => (
                 <Link
@@ -78,7 +82,7 @@ export default function HomePage() {
           </div>
         </div>
 
-        <footer className="homepage-fade px-6 pb-6 [animation-delay:420ms]">
+        <footer className="homepage-fade px-6 pb-6 [animation-delay:480ms]">
           <div className="mx-auto w-full max-w-xs">
             <Link
               className="text-xs text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
