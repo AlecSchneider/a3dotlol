@@ -3,6 +3,7 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 
 import { AnalyticsConsent } from "~/components/analytics-consent";
+import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
   title: "a3.lol",
@@ -16,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <TRPCReactProvider>{children}</TRPCReactProvider>
         <AnalyticsConsent />
       </body>
     </html>

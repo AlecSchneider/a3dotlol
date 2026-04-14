@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { env } from "~/env";
+import { api } from "~/trpc/react";
 
 type FormState = {
   error: string | null;
@@ -19,6 +19,7 @@ const initialState: FormState = {
 export function NewsletterSignup() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>(initialState);
+  const subscribe = api.newsletter.subscribe.useMutation();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,41 +35,17 @@ export function NewsletterSignup() {
     });
 
     try {
-      const response = await fetch(
-        `${env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/newsletter_signups`,
-        {
-          method: "POST",
-          headers: {
-            apikey: env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
-            "Content-Type": "application/json",
-            Prefer: "return=minimal",
-          },
-          body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            source: "homepage",
-          }),
-        },
-      );
+      const result = await subscribe.mutateAsync({
+        email,
+        source: "homepage",
+      });
 
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { code?: string; message?: string }
-          | null;
-
-        if (payload?.code === "23505") {
-          setEmail("");
-          setState({
-            error: null,
-            message: "You’re already on the list.",
-            status: "success",
-          });
-          return;
-        }
-
+      if (result.status === "duplicate") {
+        setEmail("");
         setState({
-          error: payload?.message ?? "Something went wrong. Please try again.",
-          message: null,
-          status: "error",
+          error: null,
+          message: "You’re already on the list.",
+          status: "success",
         });
         return;
       }
@@ -79,9 +56,12 @@ export function NewsletterSignup() {
         message: "You’re on the list.",
         status: "success",
       });
-    } catch {
+    } catch (error) {
       setState({
-        error: "Something went wrong. Please try again.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again.",
         message: null,
         status: "error",
       });
