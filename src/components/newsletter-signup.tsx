@@ -66,7 +66,7 @@ export function NewsletterSignup() {
         }
 
         setState({
-          error: payload.message ?? "Something went wrong. Please try again.",
+          error: payload?.message ?? "Something went wrong. Please try again.",
           message: null,
           status: "error",
         });
