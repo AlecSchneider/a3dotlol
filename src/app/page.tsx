@@ -22,6 +22,18 @@ export default function HomePage() {
 
             <NewsletterSignup />
 
+            <div className="homepage-fade mb-6 [animation-delay:180ms]">
+              <Link
+                className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
+                href="/stack"
+              >
+                <span>My Vibe Coding Stack ($0)</span>
+                <span aria-hidden="true" className="text-[var(--text-muted)]">
+                  ↗
+                </span>
+              </Link>
+            </div>
+
             <nav className="flex flex-col">
               {links.map((link, index) => (
                 <Link
@@ -30,7 +42,7 @@ export default function HomePage() {
                   href={link.href}
                   target={link.external ? "_blank" : undefined}
                   rel={link.external ? "noreferrer" : undefined}
-                  style={{ animationDelay: `${(index + 1) * 60}ms` }}
+                  style={{ animationDelay: `${(index + 4) * 60}ms` }}
                 >
                   <span className="text-[var(--text-subtle)] transition-colors duration-200 group-hover:text-[var(--text-primary)]">
                     {link.label}
