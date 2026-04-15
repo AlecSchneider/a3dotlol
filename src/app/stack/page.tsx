@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
@@ -6,6 +7,38 @@ export const metadata = {
 };
 
 const stackItems = [
+  {
+    name: "Omarchy (Arch Linux)",
+    href: "https://omarchy.org",
+    description:
+      "The OS I use while building the site. Omarchy gives me an Arch Linux setup tuned for shipping quickly.",
+    videoHref: "https://www.youtube.com/watch?v=Ts0IdyIYBfo",
+    videoThumbnailSrc: "https://i.ytimg.com/vi/Ts0IdyIYBfo/maxresdefault.jpg",
+    videoTitle: "How I use Omarchy",
+  },
+  {
+    name: "AI Agents",
+    href: "https://openai.com/codex/",
+    description:
+      "The two options I’d point people to first: Codex as the best paid option, and OpenCode if you want a free setup.",
+    agents: [
+      {
+        name: "Codex (Paid)",
+        href: "https://openai.com/codex/",
+        description:
+          "The best paid coding agent option I’ve used. It is the fastest way I know to go from idea to working code when I want strong reasoning, solid edits, and fewer dead ends.",
+      },
+      {
+        name: "OpenCode (free)",
+        href: "https://opencode.ai/",
+        description:
+          "If you want a free option, I put together a video showing how I use Open Code as a practical setup without paying for a premium coding agent.",
+      },
+    ],
+    videoHref: "https://www.youtube.com/watch?v=1vJKHymwvoc",
+    videoThumbnailSrc: "https://i.ytimg.com/vi/1vJKHymwvoc/maxresdefault.jpg",
+    videoTitle: "Free coding agent option with Open Code",
+  },
   {
     name: "create-t3-app",
     href: "https://create.t3.gg/",
@@ -76,6 +109,59 @@ export default function StackPage() {
               <p className="mt-2 text-sm leading-7 text-[var(--text-subtle)]">
                 {item.description}
               </p>
+              {"agents" in item ? (
+                <div className="mt-4 space-y-4 border-t border-[var(--surface-border)] pt-4">
+                  {item.agents.map((agent) => (
+                    <div key={agent.name}>
+                      <h3 className="text-sm text-[var(--text-primary)]">
+                        <a
+                          className="group inline-flex items-center gap-2 underline decoration-white/25 underline-offset-4 transition hover:text-cyan-300 hover:decoration-cyan-300"
+                          href={agent.href}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <span>{agent.name}</span>
+                          <span
+                            aria-hidden="true"
+                            className="text-[var(--text-muted)] opacity-70 transition-all duration-200 group-hover:translate-x-0.5 group-hover:opacity-100"
+                          >
+                            <ArrowIcon />
+                          </span>
+                        </a>
+                      </h3>
+                      <p className="mt-1 text-sm leading-7 text-[var(--text-subtle)]">
+                        {agent.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+              {"videoHref" in item ? (
+                <a
+                  className="group mt-4 block overflow-hidden border border-[var(--surface-border)] bg-black/20 transition hover:border-cyan-300/60"
+                  href={item.videoHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <Image
+                    alt={`${item.videoTitle} thumbnail`}
+                    className="aspect-video w-full object-cover transition duration-200 group-hover:scale-[1.02]"
+                    height={720}
+                    loading="lazy"
+                    src={item.videoThumbnailSrc}
+                    width={1280}
+                  />
+                  <div className="flex items-center justify-between gap-3 px-4 py-3">
+                    <span className="text-sm text-[var(--text-primary)]">
+                      {item.videoTitle}
+                    </span>
+                    <span className="inline-flex items-center gap-2 text-xs tracking-[0.2em] text-[var(--text-muted)] uppercase transition group-hover:text-cyan-300">
+                      Watch
+                      <ArrowIcon />
+                    </span>
+                  </div>
+                </a>
+              ) : null}
             </article>
           ))}
         </section>
