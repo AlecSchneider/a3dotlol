@@ -3,7 +3,7 @@
  * for Docker builds.
  */
 import "./src/env.js";
-import { links } from "./src/lib/links.js";
+import { links, youtubeHref } from "./src/lib/links.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -14,11 +14,18 @@ const config = {
     ignoreBuildErrors: true,
   },
   async redirects() {
-    return links.map((link) => ({
+    return [
+      {
+        source: "/youtube",
+        destination: youtubeHref,
+        permanent: false,
+      },
+      ...links.map((link) => ({
       source: `/${link.label}`,
       destination: link.href,
       permanent: false,
-    }));
+      })),
+    ];
   },
 };
 

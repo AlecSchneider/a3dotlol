@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { NewsletterSignup } from "~/components/newsletter-signup";
-import { links } from "~/lib/links";
+import { links, youtubeHref } from "~/lib/links";
 
 export default function HomePage() {
   return (
@@ -16,7 +16,15 @@ export default function HomePage() {
                 alec
               </h1>
               <p className="mt-1 text-sm text-[var(--text-muted)]">
-                vibe coding apps
+                vibe coding apps{" "}
+                <Link
+                  className="text-[var(--text-primary)] transition hover:text-red-300"
+                  href={youtubeHref}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  LIVE ON YOUTUBE
+                </Link>
               </p>
             </header>
 

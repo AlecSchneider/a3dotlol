@@ -1,3 +1,6 @@
+export const youtubeHref =
+  "https://www.youtube.com/@VibeCodenBis100kEuro";
+
 export const links = [
   {
     href: "https://discord.gg/zhxTK8wg",
