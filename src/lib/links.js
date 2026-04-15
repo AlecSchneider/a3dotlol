@@ -3,7 +3,7 @@ export const youtubeHref =
 
 export const links = [
   {
-    href: "https://discord.gg/zhxTK8wg",
+    href: "https://discord.gg/FZ7hkWCkzg",
     label: "discord",
     external: true,
   },
