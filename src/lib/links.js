@@ -1,5 +1,5 @@
 export const youtubeHref =
-  "https://www.youtube.com/@VibeCodenBis100kEuro";
+  "https://www.youtube.com/@VibeCodenBis100kEuro?sub_confirmation=1";
 
 export const links = [
   {

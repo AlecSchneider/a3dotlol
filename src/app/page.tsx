@@ -31,15 +31,32 @@ export default function HomePage() {
             <NewsletterSignup />
 
             <div className="homepage-fade mb-6 [animation-delay:180ms]">
-              <Link
-                className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
-                href="/stack"
-              >
-                <span>My Vibe Coding Stack ($0)</span>
-                <span aria-hidden="true" className="text-[var(--text-muted)]">
-                  ↗
-                </span>
-              </Link>
+              <div className="flex flex-col gap-3">
+                <Link
+                  className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
+                  href="/stack"
+                >
+                  <span>My Vibe Coding Stack ($0)</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-[var(--text-muted)]"
+                  >
+                    ↗
+                  </span>
+                </Link>
+                <Link
+                  className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
+                  href="/about"
+                >
+                  <span>The Project</span>
+                  <span
+                    aria-hidden="true"
+                    className="text-[var(--text-muted)]"
+                  >
+                    ↗
+                  </span>
+                </Link>
+              </div>
             </div>
 
             <nav className="flex flex-col">
