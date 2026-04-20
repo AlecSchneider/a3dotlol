@@ -28,10 +28,15 @@ const config = {
         destination: youtubeHref,
         permanent: false,
       },
+      {
+        source: "/live",
+        destination: youtubeHref,
+        permanent: false,
+      },
       ...links.map((link) => ({
-      source: `/${link.label}`,
-      destination: link.href,
-      permanent: false,
+        source: `/${link.label}`,
+        destination: link.href,
+        permanent: false,
       })),
     ];
   },

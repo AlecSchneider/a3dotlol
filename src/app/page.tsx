@@ -26,12 +26,54 @@ export default function HomePage() {
                   LIVE ON YOUTUBE
                 </Link>
               </p>
+              <Link
+                className="mt-5 inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
+                href="/about"
+              >
+                <span>The Projects</span>
+                <span aria-hidden="true" className="text-[var(--text-muted)]">
+                  ↗
+                </span>
+              </Link>
+              <div className="mt-3 flex flex-col gap-2">
+                <Link
+                  className="inline-flex items-center gap-2 text-sm text-[var(--text-subtle)] transition hover:text-cyan-300"
+                  href="/"
+                >
+                  <span>$0</span>
+                  <span aria-hidden="true" className="text-[var(--text-muted)]">
+                    |
+                  </span>
+                  <span>a3.lol (This website)</span>
+                  <span aria-hidden="true" className="text-[var(--text-muted)]">
+                    ↗
+                  </span>
+                </Link>
+                <Link
+                  className="inline-flex items-center gap-2 text-sm text-[var(--text-subtle)] transition hover:text-cyan-300"
+                  href="https://whoami.games"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <span>$0</span>
+                  <span aria-hidden="true" className="text-[var(--text-muted)]">
+                    |
+                  </span>
+                  <span>whoami.games</span>
+                  <span aria-hidden="true" className="text-[var(--text-muted)]">
+                    ↗
+                  </span>
+                </Link>
+              </div>
             </header>
 
             <NewsletterSignup />
 
             <div className="homepage-fade mb-6 [animation-delay:180ms]">
               <div className="flex flex-col gap-3">
+                <p className="text-xs font-medium uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                  Blog
+                </p>
                 <Link
                   className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
                   href="/stack"
@@ -44,19 +86,13 @@ export default function HomePage() {
                     ↗
                   </span>
                 </Link>
-                <Link
-                  className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
-                  href="/about"
-                >
-                  <span>The Project</span>
-                  <span
-                    aria-hidden="true"
-                    className="text-[var(--text-muted)]"
-                  >
-                    ↗
-                  </span>
-                </Link>
               </div>
+            </div>
+
+            <div className="mb-3">
+              <p className="text-xs font-medium uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                Links
+              </p>
             </div>
 
             <nav className="flex flex-col">
