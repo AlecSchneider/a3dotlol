@@ -33,6 +33,11 @@ const config = {
         destination: youtubeHref,
         permanent: false,
       },
+      {
+        source: "/tutorial",
+        destination: "https://www.youtube.com/watch?v=Y_NrWcWSqGQ",
+        permanent: false,
+      },
       ...links.map((link) => ({
         source: `/${link.label}`,
         destination: link.href,

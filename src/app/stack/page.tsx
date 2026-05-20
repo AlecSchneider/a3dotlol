@@ -6,7 +6,23 @@ export const metadata = {
   description: "The zero-dollar stack behind a3.lol",
 };
 
-const stackItems = [
+type StackAgent = {
+  name: string;
+  href: string;
+  description: string;
+};
+
+type StackItem = {
+  name: string;
+  href: string;
+  description: string;
+  agents?: StackAgent[];
+  videoHref?: string;
+  videoThumbnailSrc?: string;
+  videoTitle?: string;
+};
+
+const stackItems: StackItem[] = [
   {
     name: "Omarchy (Arch Linux)",
     href: "https://omarchy.org",
@@ -109,7 +125,7 @@ export default function StackPage() {
               <p className="mt-2 text-sm leading-7 text-[var(--text-subtle)]">
                 {item.description}
               </p>
-              {"agents" in item ? (
+              {item.agents ? (
                 <div className="mt-4 space-y-4 border-t border-[var(--surface-border)] pt-4">
                   {item.agents.map((agent) => (
                     <div key={agent.name}>
@@ -136,7 +152,7 @@ export default function StackPage() {
                   ))}
                 </div>
               ) : null}
-              {"videoHref" in item ? (
+              {item.videoHref && item.videoThumbnailSrc && item.videoTitle ? (
                 <a
                   className="group mt-4 block overflow-hidden border border-[var(--surface-border)] bg-black/20 transition hover:border-cyan-300/60"
                   href={item.videoHref}
