@@ -3,7 +3,7 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 
 import { AnalyticsConsent } from "~/components/analytics-consent";
-import { TRPCReactProvider } from "~/trpc/react";
+import { ConvexClientProvider } from "~/components/convex-client-provider";
 
 export const metadata: Metadata = {
   title: "a3.lol",
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <ConvexClientProvider>{children}</ConvexClientProvider>
         <AnalyticsConsent />
       </body>
     </html>

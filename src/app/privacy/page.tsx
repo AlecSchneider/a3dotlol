@@ -80,8 +80,8 @@ export default function PrivacyPage() {
           </h2>
           <p>
             If you submit your email address through the newsletter form, the
-            site stores that address in Supabase so future product updates can
-            be sent directly by this site. The stored data includes your email
+            site stores that address in Convex so future product updates can be
+            sent directly by this site. The stored data includes your email
             address, submission timestamp, and form source.
           </p>
           <p>
@@ -103,12 +103,12 @@ export default function PrivacyPage() {
           </h2>
           <p>
             Analytics data is processed via Vercel. Newsletter signup data is
-            stored via Supabase as the hosting infrastructure for the database.
-            Outside of those service providers acting on behalf of this site,
-            newsletter data is not disclosed to third parties.
+            stored via Convex as the hosting infrastructure for the database and
+            backend. Outside of those service providers acting on behalf of this
+            site, newsletter data is not disclosed to third parties.
           </p>
           <p>
-            Both providers publish GDPR and data processing information for
+            Both providers publish privacy and data processing information for
             customers. If you use either service in production, review their
             terms and complete any required data processing agreements in your
             accounts.

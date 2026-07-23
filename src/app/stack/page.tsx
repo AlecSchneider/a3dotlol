@@ -59,13 +59,13 @@ const stackItems: StackItem[] = [
     name: "create-t3-app",
     href: "https://create.t3.gg/",
     description:
-      "The codebase foundation. It gives the project the Next.js app router structure, TypeScript setup, env validation, Prisma wiring, and tRPC patterns this site uses.",
+      "The codebase foundation. It gives the project the Next.js app router structure, TypeScript setup, and environment validation this site uses.",
   },
   {
-    name: "Supabase",
-    href: "https://supabase.com/",
+    name: "Convex",
+    href: "https://www.convex.dev/",
     description:
-      "Hosted Postgres for the newsletter data. Prisma connects to the Supabase database, so the app keeps a clean typed server-side data layer without running its own database.",
+      "The database and backend for newsletter signups. Convex keeps the client and server types in sync and runs in US East, while Vercel serves the static frontend globally.",
   },
   {
     name: "Vercel",
@@ -94,8 +94,8 @@ export default function StackPage() {
             My Vibe Coding Stack ($0)
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-subtle)]">
-            This is the current stack behind a3.lol. The goal is simple:
-            ship fast, keep the surface area small, and avoid paying for
+            This is the current stack behind a3.lol. The goal is simple: ship
+            fast, keep the surface area small, and avoid paying for
             infrastructure before the site actually needs it.
           </p>
         </header>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useMutation } from "convex/react";
 
-import { api } from "~/trpc/react";
+import { api } from "../../convex/_generated/api";
 
 type FormState = {
   error: string | null;
@@ -19,7 +20,7 @@ const initialState: FormState = {
 export function NewsletterSignup() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<FormState>(initialState);
-  const subscribe = api.newsletter.subscribe.useMutation();
+  const subscribe = useMutation(api.newsletter.subscribe);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +36,7 @@ export function NewsletterSignup() {
     });
 
     try {
-      const result = await subscribe.mutateAsync({
+      const result = await subscribe({
         email,
         source: "homepage",
       });
