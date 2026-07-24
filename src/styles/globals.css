@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "IBM Plex Mono", "SFMono-Regular", "SF Mono", Consolas,
-    "Liberation Mono", Menlo, monospace;
+  --font-sans:
+    "IBM Plex Mono", "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono",
+    Menlo, monospace;
 }
 
 :root {
@@ -84,6 +85,50 @@ body {
 
 .homepage-button:hover:not(:disabled) {
   transform: translateY(-1px);
+}
+
+.legal-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  color: var(--text-subtle);
+  font-size: 0.875rem;
+  line-height: 1.75rem;
+}
+
+.legal-copy section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.legal-copy h2 {
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.legal-copy h3 {
+  color: var(--text-primary);
+  font-size: 0.875rem;
+}
+
+.legal-copy a {
+  color: var(--text-primary);
+  text-decoration-line: underline;
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+  text-underline-offset: 0.25rem;
+}
+
+.legal-copy ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+
+.legal-copy code {
+  border: 1px solid var(--surface-border);
+  background: var(--surface);
+  padding: 0.1rem 0.35rem;
+  color: var(--text-primary);
 }
 
 @media (max-width: 480px) {

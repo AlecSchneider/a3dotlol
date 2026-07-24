@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { NewsletterSignup } from "~/components/newsletter-signup";
 import { links, youtubeHref } from "~/lib/links";
 
 export default function HomePage() {
@@ -67,22 +66,17 @@ export default function HomePage() {
               </div>
             </header>
 
-            <NewsletterSignup />
-
             <div className="homepage-fade mb-6 [animation-delay:180ms]">
               <div className="flex flex-col gap-3">
-                <p className="text-xs font-medium uppercase tracking-[0.24em] text-[var(--text-muted)]">
+                <p className="text-xs font-medium tracking-[0.24em] text-[var(--text-muted)] uppercase">
                   Blog
                 </p>
                 <Link
                   className="inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
                   href="/stack"
                 >
-                  <span>My Vibe Coding Stack ($0)</span>
-                  <span
-                    aria-hidden="true"
-                    className="text-[var(--text-muted)]"
-                  >
+                  <span>My Vibe Coding Stack</span>
+                  <span aria-hidden="true" className="text-[var(--text-muted)]">
                     ↗
                   </span>
                 </Link>
@@ -90,7 +84,7 @@ export default function HomePage() {
             </div>
 
             <div className="mb-3">
-              <p className="text-xs font-medium uppercase tracking-[0.24em] text-[var(--text-muted)]">
+              <p className="text-xs font-medium tracking-[0.24em] text-[var(--text-muted)] uppercase">
                 Links
               </p>
             </div>
@@ -117,17 +111,6 @@ export default function HomePage() {
             </nav>
           </div>
         </div>
-
-        <footer className="homepage-fade px-6 pb-6 [animation-delay:480ms]">
-          <div className="mx-auto w-full max-w-xs">
-            <Link
-              className="text-xs text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"
-              href="/privacy"
-            >
-              privacy policy
-            </Link>
-          </div>
-        </footer>
       </div>
     </main>
   );

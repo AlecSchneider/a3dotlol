@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 export const metadata = {
-  title: "My Vibe Coding Stack ($0) | a3.lol",
-  description: "The zero-dollar stack behind a3.lol",
+  title: "My Vibe Coding Stack | a3.lol",
+  description: "The technology stack behind a3.lol",
 };
 
 type StackAgent = {
@@ -65,7 +65,13 @@ const stackItems: StackItem[] = [
     name: "Convex",
     href: "https://www.convex.dev/",
     description:
-      "The database and backend for newsletter signups. Convex keeps the client and server types in sync and runs in US East, while Vercel serves the static frontend globally.",
+      "The database and backend for the contact workflow and retained legacy newsletter records. Convex validates requests, enforces abuse limits, schedules message deletion, and runs in US East.",
+  },
+  {
+    name: "Discord",
+    href: "https://discord.com/",
+    description:
+      "Private support routing. Contact-form messages are delivered server-side to a dedicated private channel with mentions disabled and automatic deletion after 90 days.",
   },
   {
     name: "Vercel",
@@ -90,13 +96,11 @@ export default function StackPage() {
           <p className="text-sm tracking-[0.3em] text-[var(--text-muted)] uppercase">
             Stack
           </p>
-          <h1 className="mt-3 text-3xl tracking-tight">
-            My Vibe Coding Stack ($0)
-          </h1>
+          <h1 className="mt-3 text-3xl tracking-tight">My Vibe Coding Stack</h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--text-subtle)]">
             This is the current stack behind a3.lol. The goal is simple: ship
-            fast, keep the surface area small, and avoid paying for
-            infrastructure before the site actually needs it.
+            fast, keep the surface area small, and use managed infrastructure
+            with clear operational boundaries.
           </p>
         </header>
 

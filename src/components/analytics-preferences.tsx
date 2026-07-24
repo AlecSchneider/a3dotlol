@@ -1,17 +1,17 @@
 "use client";
 
-import { ANALYTICS_CONSENT_KEY } from "~/lib/analytics";
+import { writeAnalyticsConsent } from "~/lib/analytics";
 
 export function AnalyticsPreferences() {
   const saveConsent = (nextConsent: "accepted" | "declined") => {
-    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, nextConsent);
+    writeAnalyticsConsent(window.localStorage, nextConsent);
     window.location.reload();
   };
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
       <p className="text-sm text-[var(--text-subtle)]">
-        Manage your analytics preference
+        Analytics is optional. Both choices are available at any time.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
@@ -26,7 +26,7 @@ export function AnalyticsPreferences() {
           onClick={() => saveConsent("declined")}
           type="button"
         >
-          Disable analytics
+          Decline analytics
         </button>
       </div>
     </div>

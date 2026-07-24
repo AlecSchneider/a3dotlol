@@ -18,6 +18,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@convex-dev/rate-limiter": "^0.3.2",
     "@t3-oss/env-nextjs": "^0.12.0",
     "@vercel/analytics": "^2.0.1",
     "convex": "^1.42.3",
@@ -34,12 +35,16 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.5.21",
-    "postcss": "^8.5.3",
+    "postcss": "8.5.22",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.0.15",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.27.0"
+  },
+  "overrides": {
+    "postcss": "$postcss",
+    "sharp": "0.35.3"
   },
   "ct3aMetadata": {
     "initVersion": "7.40.0"
