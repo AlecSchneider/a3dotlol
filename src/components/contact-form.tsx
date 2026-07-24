@@ -112,6 +112,7 @@ export function ContactForm() {
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -left-[10000px] h-px w-px overflow-hidden"
+        hidden
       >
         <label htmlFor="contact-website">Website</label>
         <input
