@@ -1,10 +1,13 @@
 import Link from "next/link";
 
+import { JsonLd } from "~/components/json-ld";
 import { links, youtubeHref } from "~/lib/links";
+import { homeJsonLd } from "~/lib/seo";
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-[var(--page)] text-[var(--text-primary)]">
+      <JsonLd data={homeJsonLd} />
       <div className="relative flex min-h-screen flex-col">
         <div className="relative flex flex-1 items-center justify-center px-6 py-16">
           <div className="homepage-glow" />
@@ -29,7 +32,7 @@ export default function HomePage() {
                 className="mt-5 inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
                 href="/about"
               >
-                <span>The Projects</span>
+                <span>The €100k app challenge</span>
                 <span aria-hidden="true" className="text-[var(--text-muted)]">
                   ↗
                 </span>

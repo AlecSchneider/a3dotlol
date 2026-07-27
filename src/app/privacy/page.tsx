@@ -2,11 +2,14 @@ import Link from "next/link";
 
 import { AnalyticsPreferences } from "~/components/analytics-preferences";
 import { LegalPage } from "~/components/legal-page";
+import { createPageMetadata } from "~/lib/seo";
 
-export const metadata = {
-  title: "Privacy Policy | a3.lol",
-  description: "Privacy information for a3.lol",
-};
+export const metadata = createPageMetadata({
+  title: "Privacy Policy",
+  description:
+    "Read how a3.lol processes website, contact, support, and optional analytics data, including legal bases, retention, and your GDPR rights.",
+  path: "/privacy",
+});
 
 export default function PrivacyPage() {
   return (

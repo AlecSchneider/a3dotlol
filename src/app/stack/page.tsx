@@ -1,10 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export const metadata = {
-  title: "My Vibe Coding Stack | a3.lol",
-  description: "The technology stack behind a3.lol",
-};
+import { createPageMetadata } from "~/lib/seo";
+
+export const metadata = createPageMetadata({
+  title: "My Vibe Coding Stack",
+  description:
+    "Explore Alec Schneider's current vibe coding stack, including Codex, Convex, Vercel, PostHog, Discord, and the tools used to ship a3.lol.",
+  path: "/stack",
+});
 
 type StackAgent = {
   name: string;

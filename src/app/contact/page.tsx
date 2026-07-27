@@ -1,10 +1,13 @@
 import { ContactForm } from "~/components/contact-form";
 import { LegalPage } from "~/components/legal-page";
+import { createPageMetadata } from "~/lib/seo";
 
-export const metadata = {
-  title: "Contact | a3.lol",
-  description: "Contact Alec Schneider Solutions",
-};
+export const metadata = createPageMetadata({
+  title: "Contact Alec Schneider Solutions",
+  description:
+    "Contact Alec Schneider Solutions about projects, business inquiries, support, privacy, or the apps featured on a3.lol.",
+  path: "/contact",
+});
 
 export default function ContactPage() {
   return (

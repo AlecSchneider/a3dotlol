@@ -1,9 +1,12 @@
 import { LegalPage } from "~/components/legal-page";
+import { createPageMetadata } from "~/lib/seo";
 
-export const metadata = {
-  title: "Impressum | a3.lol",
-  description: "Legal notice for a3.lol",
-};
+export const metadata = createPageMetadata({
+  title: "Impressum – Alec Schneider Solutions",
+  description:
+    "Impressum und Anbieterkennzeichnung für a3.lol und Alec Schneider Solutions mit Anschrift und Kontaktangaben.",
+  path: "/impressum",
+});
 
 export default function ImpressumPage() {
   return (

@@ -1,10 +1,13 @@
 import { AnalyticsPreferences } from "~/components/analytics-preferences";
 import { LegalPage } from "~/components/legal-page";
+import { createPageMetadata } from "~/lib/seo";
 
-export const metadata = {
-  title: "Cookies & Storage | a3.lol",
-  description: "Cookie and browser-storage information for a3.lol",
-};
+export const metadata = createPageMetadata({
+  title: "Cookies and Analytics Preferences",
+  description:
+    "Review and manage optional PostHog analytics preferences for a3.lol, including local storage, consent, and withdrawal details.",
+  path: "/cookies",
+});
 
 export default function CookiesPage() {
   return (

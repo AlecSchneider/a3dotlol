@@ -1,10 +1,13 @@
 import { ContactForm } from "~/components/contact-form";
 import { LegalPage } from "~/components/legal-page";
+import { createPageMetadata } from "~/lib/seo";
 
-export const metadata = {
-  title: "Support | a3.lol",
-  description: "Support for projects by Alec Schneider Solutions",
-};
+export const metadata = createPageMetadata({
+  title: "App Support – Alec Schneider Solutions",
+  description:
+    "Get support for a3.lol and Alec Schneider Solutions projects. Share the app, device, browser, and steps needed to reproduce an issue.",
+  path: "/support",
+});
 
 export default function SupportPage() {
   return (
