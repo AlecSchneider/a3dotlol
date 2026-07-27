@@ -12,8 +12,8 @@ export default function CookiesPage() {
       eyebrow="Cookies & storage"
       intro={
         <p>
-          a3.lol does not set its own cookies. One local-storage entry remembers
-          your analytics choice.
+          a3.lol does not set analytics cookies. Browser storage remembers your
+          choice and, after acceptance, holds anonymous PostHog analytics state.
         </p>
       }
       title="Your privacy choice"
@@ -31,9 +31,12 @@ export default function CookiesPage() {
       <section>
         <h2>Optional analytics</h2>
         <p>
-          Vercel Web Analytics is loaded only after acceptance. Vercel describes
-          the service as cookie-free and based on anonymized, aggregated data.
-          Query strings and URL fragments are removed before an event is sent.
+          PostHog analytics is loaded only after acceptance and is configured to
+          use local storage rather than cookies. Its local-storage entries hold
+          a random anonymous identifier, session state, and event properties
+          needed to count visits and interactions. Query strings, URL fragments,
+          form contents, session recordings, and automatically captured clicks
+          are not sent.
         </p>
         <AnalyticsPreferences />
       </section>
@@ -42,8 +45,9 @@ export default function CookiesPage() {
         <h2>Change or withdraw your choice</h2>
         <p>
           You can change the setting below at any time. Disabling analytics
-          prevents future analytics events from this browser; it does not alter
-          anonymous aggregate reports already created.
+          immediately prevents future analytics events and disables PostHog
+          persistence in this browser; it does not alter anonymous reports
+          already created.
         </p>
       </section>
     </LegalPage>

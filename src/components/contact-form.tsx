@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useAction } from "convex/react";
 
 import { api } from "../../convex/_generated/api";
+import { captureProductEvent } from "~/lib/product-analytics";
 
 type FormState = {
   error: string | null;
@@ -16,9 +17,21 @@ const initialState: FormState = {
   status: "idle",
 };
 
-export function ContactForm() {
+export function ContactForm({ formName }: { formName: "contact" | "support" }) {
   const [state, setState] = useState<FormState>(initialState);
+  const hasStarted = useRef(false);
   const submitContact = useAction(api.contact.submit);
+
+  function handleFormFocus() {
+    if (hasStarted.current) {
+      return;
+    }
+
+    hasStarted.current = true;
+    captureProductEvent("contact form started", {
+      form_name: formName,
+    });
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -42,8 +55,15 @@ export function ContactForm() {
       });
 
       form.reset();
+      captureProductEvent("contact form submitted", {
+        form_name: formName,
+      });
       setState({ error: null, status: "success" });
     } catch {
+      captureProductEvent("contact form failed", {
+        form_name: formName,
+        reason: "submission_failed",
+      });
       setState({
         error:
           "The message could not be sent. Please try again or email alec@a3.lol.",
@@ -55,7 +75,11 @@ export function ContactForm() {
   const isSubmitting = state.status === "submitting";
 
   return (
-    <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+    <form
+      className="mt-8 space-y-5"
+      onFocusCapture={handleFormFocus}
+      onSubmit={handleSubmit}
+    >
       <div className="grid gap-5 sm:grid-cols-2">
         <FormField
           autoComplete="name"

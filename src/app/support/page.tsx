@@ -29,7 +29,7 @@ export default function SupportPage() {
 
       <section>
         <h2>Support request</h2>
-        <ContactForm />
+        <ContactForm formName="support" />
       </section>
     </LegalPage>
   );

@@ -1,7 +1,6 @@
-import type { BeforeSendEvent } from "@vercel/analytics/next";
-
 export const ANALYTICS_CONSENT_KEY = "analytics-consent";
-export const ANALYTICS_CONSENT_VERSION = 1;
+export const ANALYTICS_CONSENT_VERSION = 2;
+export const ANALYTICS_CONSENT_CHANGED_EVENT = "analytics-consent-changed";
 
 const ANALYTICS_CONSENT_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;
 
@@ -61,16 +60,4 @@ export function writeAnalyticsConsent(
   };
 
   storage.setItem(ANALYTICS_CONSENT_KEY, JSON.stringify(value));
-}
-
-export function sanitizeAnalyticsEvent(event: BeforeSendEvent) {
-  const url = new URL(event.url);
-
-  url.search = "";
-  url.hash = "";
-
-  return {
-    ...event,
-    url: url.pathname || "/",
-  };
 }

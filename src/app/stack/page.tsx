@@ -79,6 +79,12 @@ const stackItems: StackItem[] = [
     description:
       "Hosting and deployment. It fits this site well because the app is small, static-heavy, and works cleanly with Next.js.",
   },
+  {
+    name: "PostHog",
+    href: "https://posthog.com/",
+    description:
+      "Consent-gated product analytics in an EU-hosted project. The site records privacy-minimized page, navigation, and contact-flow events with autocapture and session replay disabled.",
+  },
 ];
 
 export default function StackPage() {

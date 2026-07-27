@@ -37,7 +37,7 @@ export default function ContactPage() {
 
       <section>
         <h2>Contact form</h2>
-        <ContactForm />
+        <ContactForm formName="contact" />
       </section>
     </LegalPage>
   );

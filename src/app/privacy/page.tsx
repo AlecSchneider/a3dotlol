@@ -18,7 +18,7 @@ export default function PrivacyPage() {
             This notice explains how personal data is processed when you visit
             a3.lol or use its contact and support forms.
           </p>
-          <p>Last updated: 24 July 2026.</p>
+          <p>Last updated: 27 July 2026.</p>
         </>
       }
       title="Privacy notice"
@@ -93,10 +93,19 @@ export default function PrivacyPage() {
       <section>
         <h2>4. Optional analytics and browser storage</h2>
         <p>
-          Vercel Web Analytics loads only after you accept it. Vercel describes
-          the service as cookie-free and based on anonymized, aggregated data.
-          Before transmission, this site removes URL query strings and
-          fragments. Vercel discards its visitor-session hash after 24 hours.
+          PostHog analytics loads only after you accept it. The site sends
+          anonymous page paths, broad link destinations, the page area where a
+          link was selected, contact or support form start/success/failure
+          outcomes, and the analytics-consent acceptance event. It does not send
+          names, email addresses, messages, form contents, full mail or phone
+          links, URL query strings, or fragments.
+        </p>
+        <p>
+          Automatic click capture, session replay, surveys, experiments, feature
+          flags, and person profiles are disabled. PostHog stores a random
+          anonymous identifier and session information in local storage after
+          acceptance so page visits can be counted together. The project is
+          hosted on PostHog Cloud EU.
         </p>
         <p>
           The legal basis is your consent under Article 6(1)(a) GDPR and § 25(1)
@@ -137,7 +146,17 @@ export default function PrivacyPage() {
             >
               Vercel Inc.
             </a>{" "}
-            for website delivery, logs, and consented analytics;
+            for website delivery and logs;
+          </li>
+          <li>
+            <a
+              href="https://posthog.com/privacy"
+              rel="noreferrer"
+              target="_blank"
+            >
+              PostHog Inc.
+            </a>{" "}
+            for consented product analytics in an EU-hosted project;
           </li>
           <li>
             <a
@@ -162,14 +181,13 @@ export default function PrivacyPage() {
           </li>
         </ul>
         <p>
-          Convex is configured in US East. Vercel, Convex, and Discord may
-          process data in the United States. Vercel states that it participates
-          in the EU-U.S. Data Privacy Framework and its DPA incorporates the
-          Standard Contractual Clauses. Convex&apos;s DPA incorporates the
-          Standard Contractual Clauses. Discord states that it uses the EU-U.S.
-          Data Privacy Framework and Standard Contractual Clauses for relevant
-          transfers. These mechanisms are intended to provide safeguards under
-          Articles 45 and 46 GDPR.
+          PostHog analytics data is hosted in the European Union. Convex is
+          configured in US East. Vercel, Convex, Discord, and PostHog&apos;s
+          support or corporate operations may involve processing in the United
+          States. The providers describe Data Privacy Framework participation
+          and/or Standard Contractual Clauses in their privacy and contractual
+          documentation. These mechanisms are intended to provide safeguards
+          under Articles 45 and 46 GDPR.
         </p>
       </section>
 

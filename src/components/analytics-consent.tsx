@@ -1,31 +1,106 @@
 "use client";
 
 import Link from "next/link";
-import { Analytics } from "@vercel/analytics/next";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import {
+  ANALYTICS_CONSENT_CHANGED_EVENT,
   type AnalyticsConsentChoice,
   readAnalyticsConsent,
-  sanitizeAnalyticsEvent,
   writeAnalyticsConsent,
 } from "~/lib/analytics";
+import {
+  captureNavigationClick,
+  capturePageView,
+  captureProductEvent,
+  disableProductAnalytics,
+  enableProductAnalytics,
+} from "~/lib/product-analytics";
 
 type ConsentState = AnalyticsConsentChoice | null;
 
 export function AnalyticsConsent() {
+  const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      setConsent(readAnalyticsConsent(window.localStorage));
-    } catch {
-      setConsent(null);
+    const loadStoredConsent = () => {
+      try {
+        setConsent(readAnalyticsConsent(window.localStorage));
+      } catch {
+        setConsent(null);
+      }
+    };
+
+    const handleConsentChanged = (event: Event) => {
+      if (!(event instanceof CustomEvent)) {
+        return;
+      }
+
+      const nextConsent: unknown = event.detail;
+      if (nextConsent === "accepted" || nextConsent === "declined") {
+        if (nextConsent === "accepted" && enableProductAnalytics()) {
+          captureProductEvent("analytics consent accepted");
+        } else if (nextConsent === "declined") {
+          disableProductAnalytics();
+        }
+
+        setConsent(nextConsent);
+      }
+    };
+
+    loadStoredConsent();
+    window.addEventListener(
+      ANALYTICS_CONSENT_CHANGED_EVENT,
+      handleConsentChanged,
+    );
+    setLoaded(true);
+
+    return () => {
+      window.removeEventListener(
+        ANALYTICS_CONSENT_CHANGED_EVENT,
+        handleConsentChanged,
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    if (consent !== "accepted") {
+      disableProductAnalytics();
+      return;
     }
 
-    setLoaded(true);
-  }, []);
+    if (!enableProductAnalytics()) {
+      return;
+    }
+
+    capturePageView(pathname);
+  }, [consent, pathname]);
+
+  useEffect(() => {
+    if (consent !== "accepted") {
+      return;
+    }
+
+    const handleClick = (event: MouseEvent) => {
+      if (!(event.target instanceof Element)) {
+        return;
+      }
+
+      const anchor = event.target.closest("a");
+      if (anchor instanceof HTMLAnchorElement) {
+        captureNavigationClick(anchor);
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [consent]);
 
   const updateConsent = (nextConsent: Exclude<ConsentState, null>) => {
     try {
@@ -34,21 +109,22 @@ export function AnalyticsConsent() {
       // The current-page choice still applies if storage is unavailable.
     }
 
-    setConsent(nextConsent);
+    window.dispatchEvent(
+      new CustomEvent(ANALYTICS_CONSENT_CHANGED_EVENT, {
+        detail: nextConsent,
+      }),
+    );
   };
 
   return (
     <>
-      {consent === "accepted" ? (
-        <Analytics beforeSend={sanitizeAnalyticsEvent} />
-      ) : null}
-
       {loaded && consent === null ? (
         <div className="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-2xl border border-white/10 bg-black/80 p-4 text-sm text-[var(--text-subtle)] shadow-2xl shadow-black/40 backdrop-blur">
           <p className="leading-6">
-            Optional, cookie-free Vercel Web Analytics loads only with your
-            consent. URLs are stripped of query strings and hashes before they
-            are sent.{" "}
+            Optional PostHog analytics loads only with your consent. It measures
+            page paths, link choices, and contact-form outcomes without
+            recording form contents. Query strings and URL fragments are
+            removed.{" "}
             <Link
               className="text-[var(--text-primary)] underline decoration-white/30 underline-offset-4"
               href="/cookies"

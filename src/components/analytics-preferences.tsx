@@ -1,11 +1,23 @@
 "use client";
 
-import { writeAnalyticsConsent } from "~/lib/analytics";
+import {
+  ANALYTICS_CONSENT_CHANGED_EVENT,
+  writeAnalyticsConsent,
+} from "~/lib/analytics";
 
 export function AnalyticsPreferences() {
   const saveConsent = (nextConsent: "accepted" | "declined") => {
-    writeAnalyticsConsent(window.localStorage, nextConsent);
-    window.location.reload();
+    try {
+      writeAnalyticsConsent(window.localStorage, nextConsent);
+    } catch {
+      // The current-page choice still applies if storage is unavailable.
+    }
+
+    window.dispatchEvent(
+      new CustomEvent(ANALYTICS_CONSENT_CHANGED_EVENT, {
+        detail: nextConsent,
+      }),
+    );
   };
 
   return (
