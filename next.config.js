@@ -65,7 +65,7 @@ const config = {
       },
       ...links.map((link) => ({
         source: `/${link.label}`,
-        destination: link.href,
+        destination: link.label === "email" ? "/contact" : link.href,
         permanent: false,
       })),
     ];
