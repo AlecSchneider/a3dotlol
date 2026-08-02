@@ -6,7 +6,7 @@ import { homeJsonLd } from "~/lib/seo";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-[var(--page)] text-[var(--text-primary)]">
+    <main className="min-h-screen overflow-x-hidden bg-[var(--page)] text-[var(--text-primary)]">
       <JsonLd data={homeJsonLd} />
       <div className="relative flex min-h-screen flex-col">
         <div className="relative flex flex-1 items-center justify-center px-6 py-16">
