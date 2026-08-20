@@ -10,4 +10,10 @@ crons.hourly(
   internal.contact.purgeExpiredDeliveries,
 );
 
+crons.hourly(
+  "delete expired email consent records",
+  { minuteUTC: 30 },
+  internal.newsletter.purgeExpired,
+);
+
 export default crons;

@@ -69,7 +69,7 @@ const stackItems: StackItem[] = [
     name: "Convex",
     href: "https://www.convex.dev/",
     description:
-      "The database and backend for the contact workflow and retained legacy newsletter records. Convex validates requests, enforces abuse limits, schedules message deletion, and runs in US East.",
+      "The database and backend for contact routing and consented email-update collection. Convex validates requests, enforces abuse limits, preserves consent history, schedules retention cleanup, and runs in US East.",
   },
   {
     name: "Discord",
@@ -87,7 +87,7 @@ const stackItems: StackItem[] = [
     name: "PostHog",
     href: "https://posthog.com/",
     description:
-      "Consent-gated product analytics in an EU-hosted project. The site records privacy-minimized page, navigation, and contact-flow events with autocapture and session replay disabled.",
+      "Consent-gated product analytics in an EU-hosted project. The site records privacy-minimized page, navigation, contact, and email-signup flow events with autocapture and session replay disabled.",
   },
 ];
 

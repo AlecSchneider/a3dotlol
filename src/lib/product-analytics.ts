@@ -10,6 +10,7 @@ import { env } from "~/env";
 
 const POSTHOG_API_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
+const POSTHOG_APP_NAME = "a3dotlol";
 
 let initialized = false;
 
@@ -64,6 +65,7 @@ export function captureProductEvent(
 
   posthog.capture(eventName, {
     ...properties,
+    app_name: POSTHOG_APP_NAME,
     surface: "web",
   });
 }

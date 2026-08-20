@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { EmailSignupForm } from "~/components/email-signup-form";
 import { JsonLd } from "~/components/json-ld";
 import { links, youtubeHref } from "~/lib/links";
 import { homeJsonLd } from "~/lib/seo";
@@ -12,7 +13,7 @@ export default function HomePage() {
         <div className="relative flex flex-1 items-center justify-center px-6 py-16">
           <div className="homepage-glow" />
 
-          <div className="relative z-10 w-full max-w-xs">
+          <div className="relative z-10 w-full max-w-md">
             <header className="homepage-fade mb-16 [animation-delay:0ms]">
               <h1 className="text-xl tracking-tight text-[var(--text-primary)]">
                 alec
@@ -112,6 +113,8 @@ export default function HomePage() {
                 </Link>
               ))}
             </nav>
+
+            <EmailSignupForm />
           </div>
         </div>
       </div>

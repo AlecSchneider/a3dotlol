@@ -25,8 +25,10 @@ If the tech stack changes, keep /stack updated!
 - Discord channel ID: `1529403995167129641`
 - Controller checkout: `/Users/clawdy/code/codex-discord`
 - The controller database maps this channel to this checkout with auto-approve enabled.
-- Common project commands: `npm run dev`, `npm run build`, `npm run check`, `npm run lint`, `npm run typecheck`, and `npm run format:check`.
-- The Next.js app is under `src/app`, server code is under `src/server`, the Prisma schema is under `prisma`, and Supabase migrations are under `supabase/migrations`.
+- Common project commands: `npm run dev`, `npm run build`, `npm run check`, `npm run lint`, `npm run test:once`, `npm run typecheck`, and `npm run format:check`.
+- The Next.js app is under `src/app`; the backend, schema, rate limits, and retention jobs are under `convex`.
+- Convex project: `a3dotlol`; production deployment: `vivid-leopard-322`; team: `alec-schneider` (numeric ID `473998`, Pro); region: US East.
+- PostHog uses EU Cloud shared project `229866`; every event from this repository must include `app_name: "a3dotlol"`.
 - Preserve the existing rule to update `src/app/stack/page.tsx` whenever the documented technology stack changes.
 - Never print, commit, paste into Discord, or otherwise expose `.env` values, database URLs, Supabase credentials, deploy keys, tokens, or other secrets. Use configured local secret stores and ignored environment files.
 

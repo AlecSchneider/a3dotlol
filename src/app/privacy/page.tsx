@@ -19,9 +19,10 @@ export default function PrivacyPage() {
         <>
           <p>
             This notice explains how personal data is processed when you visit
-            a3.lol or use its contact and support forms.
+            a3.lol, use its contact and support forms, or save email-update
+            choices.
           </p>
-          <p>Last updated: 27 July 2026.</p>
+          <p>Last updated: 20 August 2026.</p>
         </>
       }
       title="Privacy notice"
@@ -99,9 +100,11 @@ export default function PrivacyPage() {
           PostHog analytics loads only after you accept it. The site sends
           anonymous page paths, broad link destinations, the page area where a
           link was selected, contact or support form start/success/failure
-          outcomes, and the analytics-consent acceptance event. It does not send
-          names, email addresses, messages, form contents, full mail or phone
-          links, URL query strings, or fragments.
+          outcomes, email-signup open/success/failure or withdrawal outcomes,
+          the two selected-purpose booleans, and the analytics-consent
+          acceptance event. It does not send names, email addresses or hashes,
+          consent evidence, messages, form contents, full mail or phone links,
+          URL query strings, or fragments.
         </p>
         <p>
           Automatic click capture, session replay, surveys, experiments, feature
@@ -121,19 +124,37 @@ export default function PrivacyPage() {
         <AnalyticsPreferences />
       </section>
 
-      <section>
-        <h2>5. Legacy newsletter records</h2>
+      <section id="email-updates">
+        <h2>5. Email updates and marketing consent</h2>
         <p>
-          New newsletter registrations are disabled while a verifiable
-          double-opt-in process is not available. Four registrations collected
-          by the former form remain stored in Convex with email address,
-          timestamp, and source. They are not used for a campaign from this site
-          while the consent evidence is under review.
+          You may optionally provide an email address and separately choose
+          a3.lol product updates and announcements or promotions for other Alec
+          Schneider Solutions products. Neither choice is required to use the
+          site. The legal basis for each selected purpose is your consent under
+          Article 6(1)(a) GDPR.
         </p>
         <p>
-          A person who registered may request access or deletion at any time.
-          The records will not be retained after the newsletter is permanently
-          discontinued or the applicable consent is withdrawn.
+          Convex stores the normalized email address, current choices, product
+          and publisher keys, consent-copy version, source, browser locale,
+          unverified status, and grant or withdrawal timestamps. A separate
+          audit history records only changes to each purpose. The address is not
+          sent to PostHog, Discord, or an email provider.
+        </p>
+        <p>
+          Collection is active, but email delivery is not. A submission remains
+          unverified and no marketing message is sent until a double-opt-in,
+          purpose-aware sending, and unsubscribe system has been implemented.
+          You may withdraw both choices through the form on the homepage or
+          contact <a href="mailto:alec@a3.lol">alec@a3.lol</a> to change one
+          choice, request access, or request deletion.
+        </p>
+        <p>
+          The current record and consent history are deleted automatically 12
+          months after the latest signup, preference change, or withdrawal,
+          unless an earlier deletion request applies or retention is necessary
+          to establish, exercise, or defend legal claims. Four records collected
+          by an older form remain isolated as legacy records. They are not used
+          for campaigns while their consent evidence is under review.
         </p>
       </section>
 
@@ -169,8 +190,8 @@ export default function PrivacyPage() {
             >
               Convex Inc.
             </a>{" "}
-            for the backend, abuse limits, delivery metadata, and legacy
-            newsletter records; and
+            for the backend, abuse limits, delivery metadata, email contacts,
+            current consent choices, and consent history; and
           </li>
           <li>
             <a
