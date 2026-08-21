@@ -1,6 +1,6 @@
 "use client";
 
-import posthog, { type BeforeSendFn, type Properties } from "posthog-js";
+import type { BeforeSendFn, PostHog, Properties } from "posthog-js";
 
 import { env } from "~/env";
 
@@ -89,46 +89,103 @@ const EVENT_PROPERTY_ALLOWLIST: Record<ProductEventName, readonly string[]> = {
   "primary call to action clicked": ["cta_key", "placement"],
 };
 
+// The posthog-js SDK is only downloaded after a visitor accepts analytics.
+// Until then this module stays inert and the vendor chunk is never fetched.
+let posthogPromise: Promise<PostHog> | null = null;
+let posthogInstance: PostHog | null = null;
+let analyticsDesired = false;
 let initialized = false;
 
-export function enableProductAnalytics() {
+async function loadPostHog() {
+  posthogPromise ??= import("posthog-js")
+    .then((module) => {
+      posthogInstance = module.default;
+      return module.default;
+    })
+    .catch((error: unknown) => {
+      posthogPromise = null;
+      throw error;
+    });
+
+  return posthogPromise;
+}
+
+export async function enableProductAnalytics() {
   const projectToken = env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
 
   if (!projectToken) {
+    analyticsDesired = false;
     return false;
   }
 
-  if (!initialized) {
-    posthog.init(projectToken, {
-      api_host: POSTHOG_API_HOST,
-      ui_host: POSTHOG_UI_HOST,
-      advanced_disable_flags: true,
-      autocapture: false,
-      before_send: sanitizePostHogEvent,
-      capture_pageleave: false,
-      capture_pageview: false,
-      disable_product_tours: true,
-      disable_session_recording: true,
-      disable_surveys: true,
-      disable_web_experiments: true,
-      opt_out_capturing_by_default: true,
-      opt_out_persistence_by_default: true,
-      persistence: "localStorage",
-      person_profiles: "never",
-    });
-    initialized = true;
-  }
+  analyticsDesired = true;
 
-  if (posthog.has_opted_out_capturing()) {
-    posthog.opt_in_capturing({ captureEventName: false });
-  }
+  try {
+    const posthog = await loadPostHog();
 
-  return true;
+    if (!analyticsDesired) {
+      return false;
+    }
+
+    if (!initialized) {
+      posthog.init(projectToken, {
+        api_host: POSTHOG_API_HOST,
+        ui_host: POSTHOG_UI_HOST,
+        advanced_disable_flags: true,
+        autocapture: false,
+        before_send: sanitizePostHogEvent,
+        capture_pageleave: false,
+        capture_pageview: false,
+        disable_product_tours: true,
+        disable_session_recording: true,
+        disable_surveys: true,
+        disable_web_experiments: true,
+        opt_out_capturing_by_default: true,
+        opt_out_persistence_by_default: true,
+        persistence: "localStorage",
+        person_profiles: "never",
+      });
+      initialized = true;
+    }
+
+    if (!analyticsDesired) {
+      posthog.opt_out_capturing();
+      return false;
+    }
+
+    if (posthog.has_opted_out_capturing()) {
+      posthog.opt_in_capturing({ captureEventName: false });
+    }
+
+    return true;
+  } catch {
+    // A blocked or failed analytics chunk must never break the page.
+    return false;
+  }
 }
 
 export function disableProductAnalytics() {
-  if (initialized) {
-    posthog.opt_out_capturing();
+  analyticsDesired = false;
+
+  if (posthogInstance && initialized) {
+    try {
+      posthogInstance.opt_out_capturing();
+    } catch {
+      // Analytics failures must not affect consent controls or the page.
+    }
+    return;
+  }
+
+  if (posthogPromise) {
+    void posthogPromise
+      .then((posthog) => {
+        if (initialized) {
+          posthog.opt_out_capturing();
+        }
+      })
+      .catch(() => {
+        // The visitor is already opted out in local state.
+      });
   }
 }
 
@@ -136,15 +193,25 @@ export function captureProductEvent<Event extends ProductEventName>(
   eventName: Event,
   properties: ProductEventMap[Event] = {} as ProductEventMap[Event],
 ) {
-  if (!initialized || posthog.has_opted_out_capturing()) {
-    return;
-  }
+  try {
+    if (
+      !analyticsDesired ||
+      !initialized ||
+      !posthogInstance ||
+      posthogInstance.has_opted_out_capturing()
+    ) {
+      return;
+    }
 
-  posthog.capture(eventName, {
-    ...pickAllowedProperties(eventName, properties),
-    app_name: POSTHOG_APP_NAME,
-    surface: "web",
-  });
+    posthogInstance.capture(eventName, {
+      ...pickAllowedProperties(eventName, properties),
+      app_name: POSTHOG_APP_NAME,
+      surface: "web",
+    });
+  } catch {
+    // Analytics must never break the page, e.g. when the vendor chunk
+    // cannot be fetched on a flaky connection.
+  }
 }
 
 export function capturePageView(pathname: string) {
