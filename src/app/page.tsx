@@ -22,6 +22,8 @@ export default function HomePage() {
                 vibe coding apps{" "}
                 <Link
                   className="text-[var(--text-primary)] transition hover:text-red-300"
+                  data-analytics-cta="youtube_live"
+                  data-analytics-placement="hero"
                   href={youtubeHref}
                   target="_blank"
                   rel="noreferrer"
@@ -31,6 +33,8 @@ export default function HomePage() {
               </p>
               <Link
                 className="mt-5 inline-flex items-center gap-2 text-sm text-[var(--text-primary)] transition hover:text-cyan-300"
+                data-analytics-cta="challenge_details"
+                data-analytics-placement="hero"
                 href="/about"
               >
                 <span>The €100k app challenge</span>

@@ -16,6 +16,7 @@ person profiles, and automatic page views are disabled.
 | Event | When it is sent | Properties |
 | --- | --- | --- |
 | `$pageview` | Initial accepted visit and each client-side route change | `path`, `app_name`, `surface` |
+| `primary call to action clicked` | A visitor selects the YouTube live stream or challenge-details call to action | bounded `cta_key`, `placement`, `app_name`, `surface` |
 | `navigation link clicked` | A visitor selects an internal, external, email, or phone link | `destination_type`, sanitized destination path or host, `placement`, `app_name`, `surface` |
 | `contact form started` | First focus inside a contact or support form | `form_name`, `app_name`, `surface` |
 | `contact form submitted` | Convex confirms successful delivery | `form_name`, `app_name`, `surface` |
@@ -30,6 +31,19 @@ person profiles, and automatic page views are disabled.
 Never add contact-form values, signup email addresses or hashes, consent
 evidence, phone numbers, message text, search parameters, URL fragments,
 secrets, or raw errors to analytics properties.
+
+Event names and caller-supplied properties are allowlisted in
+`src/lib/product-analytics.ts`. The two homepage CTA identifiers are fixed
+values rather than link text or URLs, so this custom funnel event cannot carry
+visitor-entered data.
+
+## Dedicated-project status
+
+Project `229866` is in PostHog Cloud EU but still contains historical events
+from more than one app, separated by `app_name`. On 2026-08-21, creating a new
+dedicated a3.lol project was blocked by the Alec organization's six-project
+limit. PostHog offered a paid platform-package upgrade for additional projects;
+no upgrade, deletion, data reset, or project reassignment was performed.
 
 For a future iOS or Android app, reuse the same object-verb event names, set
 `surface` to `ios` or `android`, and use `$screen` for screen views. Native

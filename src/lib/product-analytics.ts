@@ -1,16 +1,93 @@
 "use client";
 
-import posthog, {
-  type BeforeSendFn,
-  type EventName,
-  type Properties,
-} from "posthog-js";
+import posthog, { type BeforeSendFn, type Properties } from "posthog-js";
 
 import { env } from "~/env";
 
 const POSTHOG_API_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
 const POSTHOG_APP_NAME = "a3dotlol";
+
+type AnalyticsPlacement = "content" | "footer" | "hero" | "navigation";
+type PrimaryCtaKey = "challenge_details" | "youtube_live";
+
+type ProductEventMap = {
+  $pageview: {
+    $current_url: string;
+    path: string;
+  };
+  "analytics consent accepted": Record<string, never>;
+  "contact form failed": {
+    form_name: "contact" | "support";
+    reason: "submission_failed";
+  };
+  "contact form started": {
+    form_name: "contact" | "support";
+  };
+  "contact form submitted": {
+    form_name: "contact" | "support";
+  };
+  email_signup_failed: {
+    failure_stage: "backend" | "client_validation" | "withdrawal_backend";
+    product_key: string;
+  };
+  email_signup_opened: {
+    product_key: string;
+  };
+  email_signup_submitted: {
+    product_key: string;
+    product_updates: boolean;
+    publisher_promotions: boolean;
+  };
+  email_signup_succeeded: {
+    product_key: string;
+    product_updates: boolean;
+    publisher_promotions: boolean;
+  };
+  email_signup_withdrawn: {
+    product_key: string;
+  };
+  "navigation link clicked": {
+    destination_host?: string;
+    destination_path?: string;
+    destination_type: "email" | "external" | "internal" | "phone";
+    placement: AnalyticsPlacement;
+  };
+  "primary call to action clicked": {
+    cta_key: PrimaryCtaKey;
+    placement: AnalyticsPlacement;
+  };
+};
+
+type ProductEventName = keyof ProductEventMap;
+
+const EVENT_PROPERTY_ALLOWLIST: Record<ProductEventName, readonly string[]> = {
+  $pageview: ["$current_url", "path"],
+  "analytics consent accepted": [],
+  "contact form failed": ["form_name", "reason"],
+  "contact form started": ["form_name"],
+  "contact form submitted": ["form_name"],
+  email_signup_failed: ["failure_stage", "product_key"],
+  email_signup_opened: ["product_key"],
+  email_signup_submitted: [
+    "product_key",
+    "product_updates",
+    "publisher_promotions",
+  ],
+  email_signup_succeeded: [
+    "product_key",
+    "product_updates",
+    "publisher_promotions",
+  ],
+  email_signup_withdrawn: ["product_key"],
+  "navigation link clicked": [
+    "destination_host",
+    "destination_path",
+    "destination_type",
+    "placement",
+  ],
+  "primary call to action clicked": ["cta_key", "placement"],
+};
 
 let initialized = false;
 
@@ -55,16 +132,16 @@ export function disableProductAnalytics() {
   }
 }
 
-export function captureProductEvent(
-  eventName: EventName,
-  properties: Properties = {},
+export function captureProductEvent<Event extends ProductEventName>(
+  eventName: Event,
+  properties: ProductEventMap[Event] = {} as ProductEventMap[Event],
 ) {
   if (!initialized || posthog.has_opted_out_capturing()) {
     return;
   }
 
   posthog.capture(eventName, {
-    ...properties,
+    ...pickAllowedProperties(eventName, properties),
     app_name: POSTHOG_APP_NAME,
     surface: "web",
   });
@@ -84,13 +161,15 @@ export function captureNavigationClick(anchor: HTMLAnchorElement) {
     return;
   }
 
-  const placement =
-    anchor.dataset.analyticsPlacement ??
-    (anchor.closest("footer")
-      ? "footer"
-      : anchor.closest("header, nav")
-        ? "navigation"
-        : "content");
+  const placement = getAnalyticsPlacement(anchor);
+  const ctaKey = getPrimaryCtaKey(anchor.dataset.analyticsCta);
+
+  if (ctaKey) {
+    captureProductEvent("primary call to action clicked", {
+      cta_key: ctaKey,
+      placement,
+    });
+  }
 
   if (href.startsWith("mailto:")) {
     captureProductEvent("navigation link clicked", {
@@ -162,4 +241,42 @@ function sanitizeUrlProperty(value: unknown) {
 
 function normalizePathname(pathname: string) {
   return pathname.startsWith("/") ? pathname : `/${pathname}`;
+}
+
+function getAnalyticsPlacement(anchor: HTMLAnchorElement): AnalyticsPlacement {
+  const configuredPlacement = anchor.dataset.analyticsPlacement;
+
+  if (
+    configuredPlacement === "content" ||
+    configuredPlacement === "footer" ||
+    configuredPlacement === "hero" ||
+    configuredPlacement === "navigation"
+  ) {
+    return configuredPlacement;
+  }
+
+  if (anchor.closest("footer")) {
+    return "footer";
+  }
+
+  return anchor.closest("header, nav") ? "navigation" : "content";
+}
+
+function getPrimaryCtaKey(value: string | undefined): PrimaryCtaKey | null {
+  return value === "challenge_details" || value === "youtube_live"
+    ? value
+    : null;
+}
+
+function pickAllowedProperties<Event extends ProductEventName>(
+  eventName: Event,
+  properties: ProductEventMap[Event],
+) {
+  const allowedProperties = new Set(EVENT_PROPERTY_ALLOWLIST[eventName]);
+
+  return Object.fromEntries(
+    Object.entries(properties).filter(
+      ([key, value]) => allowedProperties.has(key) && value !== undefined,
+    ),
+  ) as Properties;
 }
