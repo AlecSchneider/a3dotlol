@@ -26,6 +26,8 @@ export function AnalyticsConsent() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
+
     const loadStoredConsent = () => {
       try {
         setConsent(readAnalyticsConsent(window.localStorage));
@@ -41,11 +43,17 @@ export function AnalyticsConsent() {
 
       const nextConsent: unknown = event.detail;
       if (nextConsent === "accepted" || nextConsent === "declined") {
-        if (nextConsent === "accepted" && enableProductAnalytics()) {
-          captureProductEvent("analytics consent accepted");
-        } else if (nextConsent === "declined") {
-          disableProductAnalytics();
-        }
+        void (async () => {
+          if (nextConsent === "accepted") {
+            const enabled = await enableProductAnalytics();
+
+            if (!cancelled && enabled) {
+              captureProductEvent("analytics consent accepted");
+            }
+          } else {
+            disableProductAnalytics();
+          }
+        })();
 
         setConsent(nextConsent);
       }
@@ -59,6 +67,7 @@ export function AnalyticsConsent() {
     setLoaded(true);
 
     return () => {
+      cancelled = true;
       window.removeEventListener(
         ANALYTICS_CONSENT_CHANGED_EVENT,
         handleConsentChanged,
@@ -67,16 +76,26 @@ export function AnalyticsConsent() {
   }, []);
 
   useEffect(() => {
-    if (consent !== "accepted") {
-      disableProductAnalytics();
-      return;
-    }
+    let cancelled = false;
 
-    if (!enableProductAnalytics()) {
-      return;
-    }
+    void (async () => {
+      if (consent !== "accepted") {
+        disableProductAnalytics();
+        return;
+      }
 
-    capturePageView(pathname);
+      const enabled = await enableProductAnalytics();
+
+      if (cancelled || !enabled) {
+        return;
+      }
+
+      capturePageView(pathname);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [consent, pathname]);
 
   useEffect(() => {

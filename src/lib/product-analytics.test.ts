@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const posthogMock = vi.hoisted(() => {
-  const state = { optedOut: false };
+  const state = { optedOut: false, moduleLoads: 0 };
 
   return {
     capture: vi.fn(),
@@ -17,15 +17,19 @@ const posthogMock = vi.hoisted(() => {
   };
 });
 
-vi.mock("posthog-js", () => ({
-  default: {
-    capture: posthogMock.capture,
-    has_opted_out_capturing: posthogMock.hasOptedOut,
-    init: posthogMock.init,
-    opt_in_capturing: posthogMock.optIn,
-    opt_out_capturing: posthogMock.optOut,
-  },
-}));
+vi.mock("posthog-js", () => {
+  // Counts how many times the browser actually loads the analytics SDK.
+  posthogMock.state.moduleLoads += 1;
+  return {
+    default: {
+      capture: posthogMock.capture,
+      has_opted_out_capturing: posthogMock.hasOptedOut,
+      init: posthogMock.init,
+      opt_in_capturing: posthogMock.optIn,
+      opt_out_capturing: posthogMock.optOut,
+    },
+  };
+});
 
 vi.mock("~/env", () => ({
   env: { NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "test-project-token" },
@@ -47,8 +51,13 @@ describe("product analytics", () => {
     });
   });
 
-  it("captures bounded CTA and navigation events after consent", () => {
-    expect(enableProductAnalytics()).toBe(true);
+  it("captures bounded CTA and navigation events after consent", async () => {
+    // The SDK must stay unloaded until a visitor opts in.
+    expect(posthogMock.state.moduleLoads).toBe(0);
+
+    expect(await enableProductAnalytics()).toBe(true);
+    expect(posthogMock.state.moduleLoads).toBe(1);
+    expect(posthogMock.init).toHaveBeenCalledTimes(1);
 
     captureNavigationClick(
       createAnchor("https://www.youtube.com/@alecschneider", {
@@ -93,6 +102,11 @@ describe("product analytics", () => {
     disableProductAnalytics();
     captureProductEvent("analytics consent accepted");
     expect(posthogMock.capture).toHaveBeenCalledTimes(3);
+
+    // Re-enabling must neither reload the SDK nor re-initialize it.
+    await enableProductAnalytics();
+    expect(posthogMock.state.moduleLoads).toBe(1);
+    expect(posthogMock.init).toHaveBeenCalledTimes(1);
   });
 });
 
