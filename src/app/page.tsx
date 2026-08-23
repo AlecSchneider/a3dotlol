@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ConvexClientProvider } from "~/components/convex-client-provider";
 import { EmailSignupForm } from "~/components/email-signup-form";
 import { JsonLd } from "~/components/json-ld";
 import { links, youtubeHref } from "~/lib/links";
@@ -118,7 +119,9 @@ export default function HomePage() {
               ))}
             </nav>
 
-            <EmailSignupForm />
+            <ConvexClientProvider>
+              <EmailSignupForm />
+            </ConvexClientProvider>
           </div>
         </div>
       </div>

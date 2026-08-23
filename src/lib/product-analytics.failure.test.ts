@@ -7,10 +7,6 @@ vi.mock("posthog-js", () => {
   throw new Error("simulated analytics chunk failure");
 });
 
-vi.mock("~/env", () => ({
-  env: { NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "test-project-token" },
-}));
-
 import {
   disableProductAnalytics,
   enableProductAnalytics,
@@ -18,6 +14,8 @@ import {
 
 describe("product analytics load failure", () => {
   it("fails closed without rejecting into page code", async () => {
+    vi.stubEnv("NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN", "test-project-token");
+
     await expect(enableProductAnalytics()).resolves.toBe(false);
     expect(failedImport.attempts).toBe(1);
 

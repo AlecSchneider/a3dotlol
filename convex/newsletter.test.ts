@@ -228,6 +228,44 @@ describe("newsletter consent", () => {
     ).toHaveLength(2);
   });
 
+  it("accepts withdrawal requests from a stale consent-copy client", async () => {
+    const test = initTest();
+    const email = "stale-client@example.com";
+
+    await test.mutation(api.newsletter.subscribe, {
+      ...baseArgs,
+      email,
+      productUpdates: true,
+      publisherPromotions: true,
+    });
+
+    await expect(
+      test.mutation(api.newsletter.withdraw, {
+        ...baseArgs,
+        consentVersion: "2026-08-19" as typeof baseArgs.consentVersion,
+        email,
+      }),
+    ).resolves.toEqual({ status: "withdrawn" });
+
+    const snapshot = await readSnapshot(test);
+    expect(snapshot.preferences[0]).toMatchObject({
+      productUpdates: false,
+      publisherPromotions: false,
+    });
+  });
+
+  it("bounds the ignored consent version on withdrawal requests", async () => {
+    const test = initTest();
+
+    await expect(
+      test.mutation(api.newsletter.withdraw, {
+        ...baseArgs,
+        consentVersion: "v".repeat(65) as typeof baseArgs.consentVersion,
+        email: "bounded-version@example.com",
+      }),
+    ).rejects.toThrow("Consent version is invalid");
+  });
+
   it("keeps concurrent duplicate attempts to one contact and preference", async () => {
     const test = initTest();
     const args = {

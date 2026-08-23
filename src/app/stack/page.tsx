@@ -178,6 +178,7 @@ export default function StackPage() {
                     className="aspect-video w-full object-cover transition duration-200 group-hover:scale-[1.02]"
                     height={720}
                     loading="lazy"
+                    sizes="(max-width: 48rem) calc(100vw - 3rem), 42rem"
                     src={item.videoThumbnailSrc}
                     width={1280}
                   />

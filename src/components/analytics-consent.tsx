@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   ANALYTICS_CONSENT_CHANGED_EVENT,
   type AnalyticsConsentChoice,
-  readAnalyticsConsent,
+  subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "~/lib/analytics";
 import {
@@ -27,14 +27,6 @@ export function AnalyticsConsent() {
 
   useEffect(() => {
     let cancelled = false;
-
-    const loadStoredConsent = () => {
-      try {
-        setConsent(readAnalyticsConsent(window.localStorage));
-      } catch {
-        setConsent(null);
-      }
-    };
 
     const handleConsentChanged = (event: Event) => {
       if (!(event instanceof CustomEvent)) {
@@ -59,7 +51,10 @@ export function AnalyticsConsent() {
       }
     };
 
-    loadStoredConsent();
+    const unsubscribeFromStorage = subscribeToAnalyticsConsentStorage(
+      window,
+      setConsent,
+    );
     window.addEventListener(
       ANALYTICS_CONSENT_CHANGED_EVENT,
       handleConsentChanged,
@@ -68,6 +63,7 @@ export function AnalyticsConsent() {
 
     return () => {
       cancelled = true;
+      unsubscribeFromStorage();
       window.removeEventListener(
         ANALYTICS_CONSENT_CHANGED_EVENT,
         handleConsentChanged,
