@@ -1,4 +1,5 @@
 import { ContactForm } from "~/components/contact-form";
+import { ConvexClientProvider } from "~/components/convex-client-provider";
 import { LegalPage } from "~/components/legal-page";
 import { createPageMetadata } from "~/lib/seo";
 
@@ -32,7 +33,9 @@ export default function SupportPage() {
 
       <section>
         <h2>Support request</h2>
-        <ContactForm formName="support" />
+        <ConvexClientProvider>
+          <ContactForm formName="support" />
+        </ConvexClientProvider>
       </section>
     </LegalPage>
   );

@@ -39,7 +39,7 @@
     "convex-test": "^0.0.54",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.5.21",
-    "postcss": "8.5.22",
+    "postcss": "8.5.26",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
     "tailwindcss": "^4.0.15",

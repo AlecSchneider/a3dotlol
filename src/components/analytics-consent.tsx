@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   ANALYTICS_CONSENT_CHANGED_EVENT,
   type AnalyticsConsentChoice,
-  readAnalyticsConsent,
+  subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "~/lib/analytics";
 import {
@@ -26,13 +26,7 @@ export function AnalyticsConsent() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const loadStoredConsent = () => {
-      try {
-        setConsent(readAnalyticsConsent(window.localStorage));
-      } catch {
-        setConsent(null);
-      }
-    };
+    let cancelled = false;
 
     const handleConsentChanged = (event: Event) => {
       if (!(event instanceof CustomEvent)) {
@@ -41,17 +35,26 @@ export function AnalyticsConsent() {
 
       const nextConsent: unknown = event.detail;
       if (nextConsent === "accepted" || nextConsent === "declined") {
-        if (nextConsent === "accepted" && enableProductAnalytics()) {
-          captureProductEvent("analytics consent accepted");
-        } else if (nextConsent === "declined") {
-          disableProductAnalytics();
-        }
+        void (async () => {
+          if (nextConsent === "accepted") {
+            const enabled = await enableProductAnalytics();
+
+            if (!cancelled && enabled) {
+              captureProductEvent("analytics consent accepted");
+            }
+          } else {
+            disableProductAnalytics();
+          }
+        })();
 
         setConsent(nextConsent);
       }
     };
 
-    loadStoredConsent();
+    const unsubscribeFromStorage = subscribeToAnalyticsConsentStorage(
+      window,
+      setConsent,
+    );
     window.addEventListener(
       ANALYTICS_CONSENT_CHANGED_EVENT,
       handleConsentChanged,
@@ -59,6 +62,8 @@ export function AnalyticsConsent() {
     setLoaded(true);
 
     return () => {
+      cancelled = true;
+      unsubscribeFromStorage();
       window.removeEventListener(
         ANALYTICS_CONSENT_CHANGED_EVENT,
         handleConsentChanged,
@@ -67,16 +72,26 @@ export function AnalyticsConsent() {
   }, []);
 
   useEffect(() => {
-    if (consent !== "accepted") {
-      disableProductAnalytics();
-      return;
-    }
+    let cancelled = false;
 
-    if (!enableProductAnalytics()) {
-      return;
-    }
+    void (async () => {
+      if (consent !== "accepted") {
+        disableProductAnalytics();
+        return;
+      }
 
-    capturePageView(pathname);
+      const enabled = await enableProductAnalytics();
+
+      if (cancelled || !enabled) {
+        return;
+      }
+
+      capturePageView(pathname);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [consent, pathname]);
 
   useEffect(() => {

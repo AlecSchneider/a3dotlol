@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const posthogMock = vi.hoisted(() => {
-  const state = { optedOut: false };
+  const state = { optedOut: false, moduleLoads: 0 };
 
   return {
     capture: vi.fn(),
@@ -17,19 +17,19 @@ const posthogMock = vi.hoisted(() => {
   };
 });
 
-vi.mock("posthog-js", () => ({
-  default: {
-    capture: posthogMock.capture,
-    has_opted_out_capturing: posthogMock.hasOptedOut,
-    init: posthogMock.init,
-    opt_in_capturing: posthogMock.optIn,
-    opt_out_capturing: posthogMock.optOut,
-  },
-}));
-
-vi.mock("~/env", () => ({
-  env: { NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "test-project-token" },
-}));
+vi.mock("posthog-js", () => {
+  // Counts how many times the browser actually loads the analytics SDK.
+  posthogMock.state.moduleLoads += 1;
+  return {
+    default: {
+      capture: posthogMock.capture,
+      has_opted_out_capturing: posthogMock.hasOptedOut,
+      init: posthogMock.init,
+      opt_in_capturing: posthogMock.optIn,
+      opt_out_capturing: posthogMock.optOut,
+    },
+  };
+});
 
 import {
   captureNavigationClick,
@@ -42,13 +42,68 @@ describe("product analytics", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     posthogMock.state.optedOut = false;
+    vi.stubEnv("NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN", "test-project-token");
     vi.stubGlobal("window", {
       location: { origin: "https://a3.lol" },
     });
   });
 
-  it("captures bounded CTA and navigation events after consent", () => {
-    expect(enableProductAnalytics()).toBe(true);
+  it("captures bounded CTA and navigation events after consent", async () => {
+    // The SDK must stay unloaded until a visitor opts in.
+    expect(posthogMock.state.moduleLoads).toBe(0);
+
+    expect(await enableProductAnalytics()).toBe(true);
+    expect(posthogMock.state.moduleLoads).toBe(1);
+    expect(posthogMock.init).toHaveBeenCalledTimes(1);
+    expect(posthogMock.init).toHaveBeenCalledWith(
+      "test-project-token",
+      expect.objectContaining({
+        disable_capture_url_hashes: true,
+        save_campaign_params: false,
+        save_referrer: false,
+      }),
+    );
+
+    const initOptions = posthogMock.init.mock.calls[0]?.[1] as
+      | { before_send?: (event: unknown) => unknown }
+      | undefined;
+    const sanitized = initOptions?.before_send?.({
+      $set: { $initial_current_url: "https://a3.lol/?email=private" },
+      event: "$pageview",
+      properties: {
+        $browser: "Chrome",
+        $current_url: "https://a3.lol/about?email=private#secret",
+        $device_id: "anonymous-device",
+        $raw_user_agent: "private user agent",
+        $referrer: "https://search.example/?q=private#secret",
+        $session_entry_url: "https://a3.lol/?email=private#secret",
+        $session_id: "anonymous-session",
+        app_name: "a3dotlol",
+        distinct_id: "anonymous-device",
+        path: "/about",
+        surface: "web",
+        token: "test-project-token",
+        utm_campaign: "private-query-value",
+      },
+      uuid: "01a28b4e-22c5-4f43-9814-444c017a87b9",
+    }) as { properties?: Record<string, unknown>; $set?: unknown } | null;
+
+    expect(sanitized).toEqual({
+      event: "$pageview",
+      properties: {
+        $current_url: "/about",
+        $device_id: "anonymous-device",
+        $session_id: "anonymous-session",
+        app_name: "a3dotlol",
+        distinct_id: "anonymous-device",
+        path: "/about",
+        surface: "web",
+        token: "test-project-token",
+      },
+      timestamp: undefined,
+      uuid: "01a28b4e-22c5-4f43-9814-444c017a87b9",
+    });
+    expect(sanitized).not.toHaveProperty("$set");
 
     captureNavigationClick(
       createAnchor("https://www.youtube.com/@alecschneider", {
@@ -93,6 +148,11 @@ describe("product analytics", () => {
     disableProductAnalytics();
     captureProductEvent("analytics consent accepted");
     expect(posthogMock.capture).toHaveBeenCalledTimes(3);
+
+    // Re-enabling must neither reload the SDK nor re-initialize it.
+    await enableProductAnalytics();
+    expect(posthogMock.state.moduleLoads).toBe(1);
+    expect(posthogMock.init).toHaveBeenCalledTimes(1);
   });
 });
 
