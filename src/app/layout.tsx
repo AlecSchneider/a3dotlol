@@ -3,7 +3,6 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 
 import { AnalyticsConsent } from "~/components/analytics-consent";
-import { ConvexClientProvider } from "~/components/convex-client-provider";
 import { LegalFooter } from "~/components/legal-footer";
 import { siteConfig } from "~/lib/seo";
 
@@ -43,10 +42,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <ConvexClientProvider>
-          {children}
-          <LegalFooter />
-        </ConvexClientProvider>
+        {children}
+        <LegalFooter />
         <AnalyticsConsent />
       </body>
     </html>

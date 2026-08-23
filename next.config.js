@@ -7,9 +7,6 @@ import { links, youtubeHref } from "./src/lib/links.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
     remotePatterns: [
       {
@@ -42,9 +39,6 @@ const config = {
         source: "/(.*)",
       },
     ];
-  },
-  typescript: {
-    ignoreBuildErrors: true,
   },
   async redirects() {
     return [

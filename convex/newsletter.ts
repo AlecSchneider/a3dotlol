@@ -12,6 +12,7 @@ import {
 const CONSENT_VERSION = "2026-08-20";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LOCALE_PATTERN = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
+const MAX_CONSENT_VERSION_LENGTH = 64;
 const MAX_EMAIL_LENGTH = 254;
 const MAX_LOCALE_LENGTH = 35;
 const PRODUCT_KEY = "a3dotlol";
@@ -39,6 +40,13 @@ const commonArgs = {
   productKey: v.literal(PRODUCT_KEY),
   publisherKey: v.literal(PUBLISHER_KEY),
   source: v.literal("homepage"),
+};
+
+const withdrawArgs = {
+  ...commonArgs,
+  // Withdrawal must keep working for an already-open client after consent copy
+  // changes. The submitted version is deliberately ignored and never stored.
+  consentVersion: v.string(),
 };
 
 type Purpose = "product_updates" | "publisher_promotions";
@@ -169,11 +177,15 @@ export const subscribe = mutation({
 });
 
 export const withdraw = mutation({
-  args: commonArgs,
+  args: withdrawArgs,
   returns: v.object({ status: v.literal("withdrawn") }),
   handler: async (ctx, args) => {
     const normalizedEmail = normalizeEmail(args.email);
     const locale = normalizeLocale(args.locale);
+
+    if (args.consentVersion.length > MAX_CONSENT_VERSION_LENGTH) {
+      throw new ConvexError("Consent version is invalid.");
+    }
 
     await enforceRateLimits(ctx);
 

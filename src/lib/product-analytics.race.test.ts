@@ -25,10 +25,6 @@ const delayedPostHog = vi.hoisted(() => {
 
 vi.mock("posthog-js", () => delayedPostHog.modulePromise);
 
-vi.mock("~/env", () => ({
-  env: { NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN: "test-project-token" },
-}));
-
 import {
   captureProductEvent,
   disableProductAnalytics,
@@ -37,6 +33,8 @@ import {
 
 describe("product analytics consent race", () => {
   it("does not initialize or opt in after consent is withdrawn", async () => {
+    vi.stubEnv("NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN", "test-project-token");
+
     const enabling = enableProductAnalytics();
 
     disableProductAnalytics();

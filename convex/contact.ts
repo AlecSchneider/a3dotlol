@@ -8,6 +8,7 @@ import {
   internalMutation,
   internalQuery,
 } from "./_generated/server";
+import { recordDiscordDelivery } from "./lib/contact-delivery";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254;
@@ -119,9 +120,13 @@ export const submit = action({
     const responseBody: unknown = await response.json();
     const messageId = readDiscordMessageId(responseBody);
 
-    await ctx.runMutation(internal.contact.recordDelivery, {
-      deleteAfter: sentAt + RETENTION_MS,
-      messageId,
+    await recordDiscordDelivery({
+      record: () =>
+        ctx.runMutation(internal.contact.recordDelivery, {
+          deleteAfter: sentAt + RETENTION_MS,
+          messageId,
+        }),
+      remove: () => deleteDiscordMessage(webhookUrl, messageId),
     });
 
     return { status: "sent" as const };
@@ -178,15 +183,11 @@ export const purgeExpiredDeliveries = internalAction({
     );
 
     for (const delivery of deliveries) {
-      const deletionUrl = new URL(webhookUrl);
-      deletionUrl.search = "";
-      deletionUrl.pathname = `${deletionUrl.pathname.replace(/\/$/, "")}/messages/${encodeURIComponent(delivery.messageId)}`;
-
       try {
-        const response = await fetch(deletionUrl, {
-          method: "DELETE",
-          signal: AbortSignal.timeout(WEBHOOK_TIMEOUT_MS),
-        });
+        const response = await deleteDiscordMessage(
+          webhookUrl,
+          delivery.messageId,
+        );
 
         if (response.ok || response.status === 404) {
           await ctx.runMutation(internal.contact.removeDeliveryRecord, {
@@ -201,6 +202,17 @@ export const purgeExpiredDeliveries = internalAction({
     return null;
   },
 });
+
+function deleteDiscordMessage(webhookUrl: string, messageId: string) {
+  const deletionUrl = new URL(webhookUrl);
+  deletionUrl.search = "";
+  deletionUrl.pathname = `${deletionUrl.pathname.replace(/\/$/, "")}/messages/${encodeURIComponent(messageId)}`;
+
+  return fetch(deletionUrl, {
+    method: "DELETE",
+    signal: AbortSignal.timeout(WEBHOOK_TIMEOUT_MS),
+  });
+}
 
 function getWebhookUrl() {
   const value = process.env.CONTACT_DISCORD_WEBHOOK;

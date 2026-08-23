@@ -61,3 +61,39 @@ export function writeAnalyticsConsent(
 
   storage.setItem(ANALYTICS_CONSENT_KEY, JSON.stringify(value));
 }
+
+type AnalyticsConsentStorageTarget = {
+  localStorage: Pick<Storage, "getItem" | "removeItem">;
+  addEventListener(
+    type: "storage",
+    listener: (event: Pick<StorageEvent, "key">) => void,
+  ): void;
+  removeEventListener(
+    type: "storage",
+    listener: (event: Pick<StorageEvent, "key">) => void,
+  ): void;
+};
+
+export function subscribeToAnalyticsConsentStorage(
+  target: AnalyticsConsentStorageTarget,
+  onChange: (choice: AnalyticsConsentChoice | null) => void,
+  now = Date.now,
+) {
+  const readStoredChoice = () => {
+    try {
+      onChange(readAnalyticsConsent(target.localStorage, now()));
+    } catch {
+      onChange(null);
+    }
+  };
+  const handleStorage = (event: Pick<StorageEvent, "key">) => {
+    if (event.key === null || event.key === ANALYTICS_CONSENT_KEY) {
+      readStoredChoice();
+    }
+  };
+
+  readStoredChoice();
+  target.addEventListener("storage", handleStorage);
+
+  return () => target.removeEventListener("storage", handleStorage);
+}

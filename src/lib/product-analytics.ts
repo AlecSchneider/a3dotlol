@@ -2,8 +2,6 @@
 
 import type { BeforeSendFn, PostHog, Properties } from "posthog-js";
 
-import { env } from "~/env";
-
 const POSTHOG_API_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
 const POSTHOG_APP_NAME = "a3dotlol";
@@ -89,6 +87,21 @@ const EVENT_PROPERTY_ALLOWLIST: Record<ProductEventName, readonly string[]> = {
   "primary call to action clicked": ["cta_key", "placement"],
 };
 
+// PostHog needs these fields to ingest anonymous events and join page views
+// into sessions. All other SDK-added browser, campaign, and URL properties are
+// removed by before_send so the final payload matches the privacy notice.
+const POSTHOG_INGESTION_PROPERTY_ALLOWLIST = new Set([
+  "$device_id",
+  "$insert_id",
+  "$lib",
+  "$lib_version",
+  "$session_id",
+  "$time",
+  "$window_id",
+  "distinct_id",
+  "token",
+]);
+
 // The posthog-js SDK is only downloaded after a visitor accepts analytics.
 // Until then this module stays inert and the vendor chunk is never fetched.
 let posthogPromise: Promise<PostHog> | null = null;
@@ -111,7 +124,7 @@ async function loadPostHog() {
 }
 
 export async function enableProductAnalytics() {
-  const projectToken = env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  const projectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
 
   if (!projectToken) {
     analyticsDesired = false;
@@ -136,6 +149,7 @@ export async function enableProductAnalytics() {
         before_send: sanitizePostHogEvent,
         capture_pageleave: false,
         capture_pageview: false,
+        disable_capture_url_hashes: true,
         disable_product_tours: true,
         disable_session_recording: true,
         disable_surveys: true,
@@ -144,6 +158,8 @@ export async function enableProductAnalytics() {
         opt_out_persistence_by_default: true,
         persistence: "localStorage",
         person_profiles: "never",
+        save_campaign_params: false,
+        save_referrer: false,
       });
       initialized = true;
     }
@@ -281,13 +297,37 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
     return null;
   }
 
+  if (!Object.hasOwn(EVENT_PROPERTY_ALLOWLIST, captureResult.event)) {
+    return null;
+  }
+
+  const eventName = captureResult.event as ProductEventName;
+  const eventPropertyAllowlist = new Set(EVENT_PROPERTY_ALLOWLIST[eventName]);
+  const properties = Object.fromEntries(
+    Object.entries(captureResult.properties).flatMap(([key, value]) => {
+      if (
+        !POSTHOG_INGESTION_PROPERTY_ALLOWLIST.has(key) &&
+        !eventPropertyAllowlist.has(key) &&
+        key !== "app_name" &&
+        key !== "surface"
+      ) {
+        return [];
+      }
+
+      if (key === "$current_url") {
+        const sanitizedValue = sanitizeUrlProperty(value);
+        return sanitizedValue === undefined ? [] : [[key, sanitizedValue]];
+      }
+
+      return value === undefined ? [] : [[key, value]];
+    }),
+  );
+
   return {
-    ...captureResult,
-    properties: {
-      ...captureResult.properties,
-      $current_url: sanitizeUrlProperty(captureResult.properties.$current_url),
-      $referrer: sanitizeUrlProperty(captureResult.properties.$referrer),
-    },
+    event: captureResult.event,
+    properties,
+    timestamp: captureResult.timestamp,
+    uuid: captureResult.uuid,
   };
 };
 
