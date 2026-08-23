@@ -8,7 +8,7 @@ import {
   internalMutation,
   internalQuery,
 } from "./_generated/server";
-import { recordDiscordDelivery } from "./lib/contact-delivery";
+import { recordDiscordDelivery } from "./lib/contactDelivery";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254;
