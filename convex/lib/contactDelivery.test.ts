@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { recordDiscordDelivery } from "./contact-delivery";
+import { recordDiscordDelivery } from "./contactDelivery";
 
 describe("contact delivery persistence", () => {
   it("removes the Discord message when its retention record cannot be saved", async () => {
