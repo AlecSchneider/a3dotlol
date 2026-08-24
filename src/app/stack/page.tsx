@@ -87,7 +87,7 @@ const stackItems: StackItem[] = [
     name: "PostHog",
     href: "https://posthog.com/",
     description:
-      "Consent-gated product analytics in an EU-hosted project. The site records privacy-minimized page, navigation, contact, and email-signup flow events with autocapture and session replay disabled.",
+      "Consent-gated product analytics in an EU-hosted project. The site combines explicit funnel events with privacy-filtered click analytics, heatmaps, Web Vitals, error signals, and masked session replay.",
   },
 ];
 

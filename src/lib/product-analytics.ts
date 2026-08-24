@@ -1,10 +1,17 @@
 "use client";
 
-import type { BeforeSendFn, PostHog, Properties } from "posthog-js";
+import type {
+  BeforeSendFn,
+  PostHog,
+  PostHogConfig,
+  Properties,
+} from "posthog-js";
 
 const POSTHOG_API_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
 const POSTHOG_APP_NAME = "a3dotlol";
+const PRIVATE_ELEMENT_SELECTOR =
+  "form, input, textarea, select, option, [contenteditable='true'], [data-private]";
 
 type AnalyticsPlacement = "content" | "footer" | "hero" | "navigation";
 type PrimaryCtaKey = "challenge_details" | "youtube_live";
@@ -91,16 +98,71 @@ const EVENT_PROPERTY_ALLOWLIST: Record<ProductEventName, readonly string[]> = {
 // into sessions. All other SDK-added browser, campaign, and URL properties are
 // removed by before_send so the final payload matches the privacy notice.
 const POSTHOG_INGESTION_PROPERTY_ALLOWLIST = new Set([
+  "$browser",
+  "$browser_version",
+  "$current_url",
   "$device_id",
+  "$device_type",
+  "$host",
   "$insert_id",
+  "$language",
   "$lib",
   "$lib_version",
+  "$os",
+  "$os_version",
+  "$pathname",
+  "$referrer",
+  "$referring_domain",
+  "$screen_height",
+  "$screen_width",
+  "$session_entry_url",
   "$session_id",
   "$time",
+  "$timezone",
+  "$timezone_offset",
+  "$viewport_height",
+  "$viewport_width",
   "$window_id",
   "distinct_id",
   "token",
 ]);
+
+const AUTOMATIC_EVENT_PROPERTY_ALLOWLIST: Record<string, readonly string[]> = {
+  $$heatmap: ["$heatmap_data"],
+  $autocapture: [
+    "$ce_version",
+    "$elements",
+    "$elements_chain",
+    "$event_type",
+    "$external_click_url",
+  ],
+  $dead_click: ["$ce_version", "$elements", "$elements_chain", "$event_type"],
+  $dead_swipe: [
+    "$ce_version",
+    "$dead_swipe_direction",
+    "$dead_swipe_distance_px",
+    "$elements",
+    "$elements_chain",
+    "$event_type",
+  ],
+  $exception: ["$exception_level", "$exception_list"],
+  $pageleave: [
+    "$prev_pageview_duration",
+    "$prev_pageview_id",
+    "$prev_pageview_last_content",
+    "$prev_pageview_last_content_percentage",
+    "$prev_pageview_last_scroll",
+    "$prev_pageview_last_scroll_percentage",
+    "$prev_pageview_max_content",
+    "$prev_pageview_max_content_percentage",
+    "$prev_pageview_max_scroll",
+    "$prev_pageview_max_scroll_percentage",
+    "$prev_pageview_pathname",
+  ],
+  $rageclick: ["$ce_version", "$elements", "$elements_chain", "$event_type"],
+  $snapshot: ["$snapshot_bytes", "$snapshot_data", "$snapshot_host"],
+  $web_vitals: [],
+};
 
 // The posthog-js SDK is only downloaded after a visitor accepts analytics.
 // Until then this module stays inert and the vendor chunk is never fetched.
@@ -144,22 +206,84 @@ export async function enableProductAnalytics() {
       posthog.init(projectToken, {
         api_host: POSTHOG_API_HOST,
         ui_host: POSTHOG_UI_HOST,
-        advanced_disable_flags: true,
-        autocapture: false,
+        defaults: "2026-06-25",
+        autocapture: {
+          capture_copied_text: false,
+          css_selector_ignorelist: [
+            ".ph-no-autocapture",
+            ".ph-no-capture",
+            "[data-ph-no-autocapture]",
+            PRIVATE_ELEMENT_SELECTOR,
+          ],
+          dom_event_allowlist: ["click"],
+          element_allowlist: ["a", "button"],
+          element_attribute_ignorelist: ["aria-label", "id", "name", "value"],
+        },
         before_send: sanitizePostHogEvent,
-        capture_pageleave: false,
+        capture_dead_clicks: {
+          capture_dead_swipes: true,
+          css_selector_ignorelist: [
+            ".ph-no-capture",
+            ".ph-no-deadclick",
+            PRIVATE_ELEMENT_SELECTOR,
+          ],
+          element_attribute_ignorelist: ["aria-label", "id", "name", "value"],
+        },
+        capture_exceptions: {
+          capture_console_errors: false,
+          capture_unhandled_errors: true,
+          capture_unhandled_rejections: true,
+        },
+        capture_heatmaps: true,
+        capture_pageleave: true,
         capture_pageview: false,
+        capture_performance: {
+          network_timing: false,
+          web_vitals: true,
+          web_vitals_attribution: false,
+        },
         disable_capture_url_hashes: true,
         disable_product_tours: true,
-        disable_session_recording: true,
+        disable_session_recording: false,
         disable_surveys: true,
         disable_web_experiments: true,
+        enable_recording_console_log: false,
+        mask_all_element_attributes: true,
+        mask_all_text: true,
+        mask_personal_data_properties: true,
+        custom_personal_data_properties: [
+          "address",
+          "email",
+          "message",
+          "name",
+          "phone",
+          "token",
+        ],
         opt_out_capturing_by_default: true,
         opt_out_persistence_by_default: true,
         persistence: "localStorage",
         person_profiles: "never",
+        rageclick: {
+          css_selector_ignorelist: [
+            ".ph-no-capture",
+            ".ph-no-rageclick",
+            PRIVATE_ELEMENT_SELECTOR,
+          ],
+          ignore_text_selection: true,
+        },
         save_campaign_params: false,
         save_referrer: false,
+        session_recording: {
+          blockSelector: PRIVATE_ELEMENT_SELECTOR,
+          collectFonts: false,
+          maskAllInputs: true,
+          maskTextSelector: "form, [data-private]",
+          recordBody: false,
+          recordCrossOriginIframes: false,
+          recordHeaders: false,
+          sampleRate: 1,
+          maskCapturedNetworkRequestFn: sanitizeRecordedRequest,
+        },
       });
       initialized = true;
     }
@@ -172,6 +296,9 @@ export async function enableProductAnalytics() {
     if (posthog.has_opted_out_capturing()) {
       posthog.opt_in_capturing({ captureEventName: false });
     }
+
+    posthog.register({ app_name: POSTHOG_APP_NAME, surface: "web" });
+    posthog.startSessionRecording();
 
     return true;
   } catch {
@@ -186,6 +313,7 @@ export function disableProductAnalytics() {
   if (posthogInstance && initialized) {
     try {
       posthogInstance.opt_out_capturing();
+      posthogInstance.stopSessionRecording();
     } catch {
       // Analytics failures must not affect consent controls or the page.
     }
@@ -197,6 +325,7 @@ export function disableProductAnalytics() {
       .then((posthog) => {
         if (initialized) {
           posthog.opt_out_capturing();
+          posthog.stopSessionRecording();
         }
       })
       .catch(() => {
@@ -297,14 +426,48 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
     return null;
   }
 
-  if (!Object.hasOwn(EVENT_PROPERTY_ALLOWLIST, captureResult.event)) {
+  const isCustomEvent = Object.hasOwn(
+    EVENT_PROPERTY_ALLOWLIST,
+    captureResult.event,
+  );
+  const isAutomaticEvent = Object.hasOwn(
+    AUTOMATIC_EVENT_PROPERTY_ALLOWLIST,
+    captureResult.event,
+  );
+
+  if (!isCustomEvent && !isAutomaticEvent) {
     return null;
   }
 
-  const eventName = captureResult.event as ProductEventName;
-  const eventPropertyAllowlist = new Set(EVENT_PROPERTY_ALLOWLIST[eventName]);
+  const eventPropertyAllowlist = new Set(
+    isCustomEvent
+      ? EVENT_PROPERTY_ALLOWLIST[captureResult.event as ProductEventName]
+      : (AUTOMATIC_EVENT_PROPERTY_ALLOWLIST[captureResult.event] ?? []),
+  );
   const properties = Object.fromEntries(
     Object.entries(captureResult.properties).flatMap(([key, value]) => {
+      if (
+        captureResult.event === "$web_vitals" &&
+        /^\$web_vitals_(CLS|FCP|INP|LCP)_(event|value)$/.test(key)
+      ) {
+        const sanitizedValue = key.endsWith("_event")
+          ? sanitizeWebVital(value)
+          : sanitizeFiniteNumber(value);
+        return sanitizedValue === undefined ? [] : [[key, sanitizedValue]];
+      }
+
+      if (
+        (captureResult.event === "$dead_click" ||
+          captureResult.event === "$dead_swipe") &&
+        /^\$(dead_click|dead_swipe)_[a-z_]+(?:_ms|_timeout|_timestamp)$/.test(
+          key,
+        )
+      ) {
+        return typeof value === "boolean" || Number.isFinite(value)
+          ? [[key, value]]
+          : [];
+      }
+
       if (
         !POSTHOG_INGESTION_PROPERTY_ALLOWLIST.has(key) &&
         !eventPropertyAllowlist.has(key) &&
@@ -314,14 +477,53 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
         return [];
       }
 
-      if (key === "$current_url") {
+      if (
+        key === "$current_url" ||
+        key === "$external_click_url" ||
+        key === "$referrer" ||
+        key === "$session_entry_url"
+      ) {
         const sanitizedValue = sanitizeUrlProperty(value);
         return sanitizedValue === undefined ? [] : [[key, sanitizedValue]];
+      }
+
+      if (key === "$pathname" || key === "$prev_pageview_pathname") {
+        return typeof value === "string"
+          ? [[key, normalizePathname(value.split(/[?#]/u, 1)[0] ?? "")]]
+          : [];
+      }
+
+      if (key === "$elements") {
+        const sanitizedValue = sanitizeElements(value);
+        return sanitizedValue.length ? [[key, sanitizedValue]] : [];
+      }
+
+      if (key === "$elements_chain") {
+        const sanitizedElements = sanitizeElements(
+          captureResult.properties.$elements,
+        );
+        const sanitizedValue = buildElementsChain(sanitizedElements);
+        return sanitizedValue ? [[key, sanitizedValue]] : [];
+      }
+
+      if (key === "$heatmap_data") {
+        const sanitizedValue = sanitizeHeatmapData(value);
+        return Object.keys(sanitizedValue).length
+          ? [[key, sanitizedValue]]
+          : [];
+      }
+
+      if (key === "$exception_list") {
+        const sanitizedValue = sanitizeExceptionList(value);
+        return sanitizedValue.length ? [[key, sanitizedValue]] : [];
       }
 
       return value === undefined ? [] : [[key, value]];
     }),
   );
+
+  properties.app_name = POSTHOG_APP_NAME;
+  properties.surface = "web";
 
   return {
     event: captureResult.event,
@@ -330,6 +532,31 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
     uuid: captureResult.uuid,
   };
 };
+
+type CapturedNetworkRequest = Parameters<
+  NonNullable<
+    PostHogConfig["session_recording"]["maskCapturedNetworkRequestFn"]
+  >
+>[0];
+
+function sanitizeRecordedRequest(request: CapturedNetworkRequest) {
+  const sanitizedUrl = sanitizeAbsoluteUrl(request.name);
+
+  return sanitizedUrl ? { ...request, name: sanitizedUrl } : null;
+}
+
+function sanitizeAbsoluteUrl(value: unknown) {
+  if (typeof value !== "string" || !value) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value, window.location.origin);
+    return `${url.origin}${normalizePathname(url.pathname)}`;
+  } catch {
+    return undefined;
+  }
+}
 
 function sanitizeUrlProperty(value: unknown) {
   if (typeof value !== "string" || !value) {
@@ -344,6 +571,211 @@ function sanitizeUrlProperty(value: unknown) {
   } catch {
     return undefined;
   }
+}
+
+type SafeElement = {
+  attr__href?: string;
+  nth_child?: number;
+  nth_of_type?: number;
+  tag_name: string;
+};
+
+function sanitizeElements(value: unknown): SafeElement[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value.slice(0, 20).flatMap((element) => {
+    if (!element || typeof element !== "object") {
+      return [];
+    }
+
+    const candidate = element as Record<string, unknown>;
+    const tagName =
+      typeof candidate.tag_name === "string" &&
+      /^[a-z][a-z0-9-]{0,31}$/u.test(candidate.tag_name)
+        ? candidate.tag_name
+        : null;
+
+    if (!tagName) {
+      return [];
+    }
+
+    const safeElement: SafeElement = { tag_name: tagName };
+    const nthChild = sanitizePositiveInteger(candidate.nth_child);
+    const nthOfType = sanitizePositiveInteger(candidate.nth_of_type);
+    const href = sanitizeUrlProperty(candidate.attr__href);
+
+    if (nthChild !== undefined) safeElement.nth_child = nthChild;
+    if (nthOfType !== undefined) safeElement.nth_of_type = nthOfType;
+    if (href !== undefined) safeElement.attr__href = href;
+
+    return [safeElement];
+  });
+}
+
+function buildElementsChain(elements: SafeElement[]) {
+  return elements
+    .map((element) => {
+      const nthChild = element.nth_child
+        ? `:nth-child(${element.nth_child})`
+        : "";
+      const nthOfType = element.nth_of_type
+        ? `:nth-of-type(${element.nth_of_type})`
+        : "";
+      return `${element.tag_name}${nthChild}${nthOfType}`;
+    })
+    .join(";");
+}
+
+function sanitizeHeatmapData(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).flatMap(
+      ([rawUrl, rawPoints]) => {
+        const url = sanitizeUrlProperty(rawUrl);
+        if (!url || !Array.isArray(rawPoints)) return [];
+
+        const points = rawPoints.slice(0, 2_000).flatMap((rawPoint) => {
+          if (!rawPoint || typeof rawPoint !== "object") return [];
+          const point = rawPoint as Record<string, unknown>;
+          const x = sanitizeFiniteNumber(point.x, 0, 100_000);
+          const y = sanitizeFiniteNumber(point.y, 0, 100_000);
+          const type =
+            typeof point.type === "string" &&
+            ["click", "deadclick", "mousemove", "rageclick"].includes(
+              point.type,
+            )
+              ? point.type
+              : undefined;
+
+          if (x === undefined || y === undefined || !type) return [];
+
+          return [
+            {
+              target_fixed: point.target_fixed === true,
+              type,
+              x,
+              y,
+            },
+          ];
+        });
+
+        return points.length ? [[url, points]] : [];
+      },
+    ),
+  );
+}
+
+function sanitizeWebVital(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return undefined;
+  }
+
+  const metric = value as Record<string, unknown>;
+  const name =
+    typeof metric.name === "string" &&
+    ["CLS", "FCP", "INP", "LCP"].includes(metric.name)
+      ? metric.name
+      : undefined;
+  const valueNumber = sanitizeFiniteNumber(metric.value, 0);
+
+  if (!name || valueNumber === undefined) return undefined;
+
+  return {
+    delta: sanitizeFiniteNumber(metric.delta),
+    name,
+    rating:
+      typeof metric.rating === "string" &&
+      ["good", "needs-improvement", "poor"].includes(metric.rating)
+        ? metric.rating
+        : undefined,
+    value: valueNumber,
+  };
+}
+
+function sanitizeExceptionList(value: unknown) {
+  if (!Array.isArray(value)) return [];
+
+  return value.slice(0, 5).flatMap((rawException) => {
+    if (!rawException || typeof rawException !== "object") return [];
+    const exception = rawException as Record<string, unknown>;
+    const type = sanitizeCodeLabel(exception.type);
+    if (!type) return [];
+
+    const rawStacktrace = exception.stacktrace;
+    const rawFrames =
+      rawStacktrace &&
+      typeof rawStacktrace === "object" &&
+      !Array.isArray(rawStacktrace) &&
+      Array.isArray((rawStacktrace as Record<string, unknown>).frames)
+        ? ((rawStacktrace as Record<string, unknown>).frames as unknown[])
+        : [];
+    const frames = rawFrames.slice(0, 50).flatMap((rawFrame) => {
+      if (!rawFrame || typeof rawFrame !== "object") return [];
+      const frame = rawFrame as Record<string, unknown>;
+      const filename = sanitizeUrlProperty(frame.filename);
+      const platform = sanitizeCodeLabel(frame.platform);
+      const functionName = sanitizeCodeLabel(frame.function);
+      const sanitizedFrame: Record<string, unknown> = {};
+
+      if (filename) sanitizedFrame.filename = filename;
+      if (functionName) sanitizedFrame.function = functionName;
+      if (platform) sanitizedFrame.platform = platform;
+      if (typeof frame.in_app === "boolean") {
+        sanitizedFrame.in_app = frame.in_app;
+      }
+
+      const lineno = sanitizePositiveInteger(frame.lineno, 10_000_000);
+      const colno = sanitizePositiveInteger(frame.colno, 10_000_000);
+      if (lineno !== undefined) sanitizedFrame.lineno = lineno;
+      if (colno !== undefined) sanitizedFrame.colno = colno;
+
+      return Object.keys(sanitizedFrame).length ? [sanitizedFrame] : [];
+    });
+
+    return [
+      {
+        ...(frames.length
+          ? { stacktrace: { frames, type: "raw" as const } }
+          : {}),
+        type,
+      },
+    ];
+  });
+}
+
+function sanitizeCodeLabel(value: unknown) {
+  return typeof value === "string" &&
+    value.length <= 160 &&
+    /^[A-Za-z0-9_.$:/<>\-[\] ]+$/u.test(value)
+    ? value
+    : undefined;
+}
+
+function sanitizePositiveInteger(value: unknown, max = 1_000) {
+  return typeof value === "number" &&
+    Number.isInteger(value) &&
+    value > 0 &&
+    value <= max
+    ? value
+    : undefined;
+}
+
+function sanitizeFiniteNumber(
+  value: unknown,
+  min = Number.NEGATIVE_INFINITY,
+  max = Number.POSITIVE_INFINITY,
+) {
+  return typeof value === "number" &&
+    Number.isFinite(value) &&
+    value >= min &&
+    value <= max
+    ? value
+    : undefined;
 }
 
 function normalizePathname(pathname: string) {
