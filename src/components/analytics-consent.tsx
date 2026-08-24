@@ -137,9 +137,9 @@ export function AnalyticsConsent() {
         <div className="fixed right-4 bottom-4 left-4 z-50 mx-auto max-w-xl rounded-2xl border border-white/10 bg-black/80 p-4 text-sm text-[var(--text-subtle)] shadow-2xl shadow-black/40 backdrop-blur">
           <p className="leading-6">
             Optional PostHog analytics loads only with your consent. It measures
-            page paths, link choices, and contact-form outcomes without
-            recording form contents. Query strings and URL fragments are
-            removed.{" "}
+            page paths, interactions, performance, errors, and masked session
+            replays. Forms and inputs are excluded; query strings, fragments,
+            and form contents are not recorded.{" "}
             <Link
               className="text-[var(--text-primary)] underline decoration-white/30 underline-offset-4"
               href="/cookies"

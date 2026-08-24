@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             a3.lol, use its contact and support forms, or save email-update
             choices.
           </p>
-          <p>Last updated: 20 August 2026.</p>
+          <p>Last updated: 24 August 2026.</p>
         </>
       }
       title="Privacy notice"
@@ -102,22 +102,31 @@ export default function PrivacyPage() {
           link was selected, contact or support form start/success/failure
           outcomes, email-signup open/success/failure or withdrawal outcomes,
           the two selected-purpose booleans, and the analytics-consent
-          acceptance event. It does not send names, email addresses or hashes,
-          consent evidence, messages, form contents, full mail or phone links,
-          URL query strings, or fragments.
+          acceptance event. It also measures clicks on links and non-form
+          buttons, page-exit and scroll depth, rage or ineffective clicks,
+          pointer positions for heatmaps, Core Web Vitals, coarse browser and
+          device details, referrer origin, sanitized unhandled-error metadata,
+          and masked session replays.
         </p>
         <p>
-          Automatic click capture, session replay, surveys, experiments, feature
-          flags, and person profiles are disabled. PostHog stores a random
-          anonymous identifier and session information in local storage after
-          acceptance so page visits can be counted together. The project is
-          hosted on PostHog Cloud EU.
+          Forms and form controls are excluded from automatic clicks and blocked
+          from replay. All input values are masked. Automatically captured text
+          and element attributes, copied text, console logs, network bodies and
+          headers, raw error messages, names, email addresses or hashes, consent
+          evidence, messages, full mail or phone links, URL query strings, and
+          fragments are not sent. Surveys, experiments, feature flags, and
+          person profiles are disabled. PostHog stores a random anonymous
+          identifier and session information in local storage after acceptance
+          so visits can be counted together. Analytics events are retained for
+          up to 12 months and session replays for 30 days under the current
+          project settings. The project is hosted on PostHog Cloud EU.
         </p>
         <p>
           The legal basis is your consent under Article 6(1)(a) GDPR and § 25(1)
           TDDDG. Your decision is stored locally in your browser for 180 days so
           the site can remember it. You may withdraw consent at any time with
-          effect for the future. See the{" "}
+          effect for the future. Withdrawal stops recording and resets the
+          browser&apos;s anonymous PostHog state. See the{" "}
           <Link href="/cookies">cookies and storage page</Link> for full
           details.
         </p>

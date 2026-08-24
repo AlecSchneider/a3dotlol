@@ -2,11 +2,24 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   ANALYTICS_CONSENT_KEY,
+  readAnalyticsConsent,
   subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "./analytics";
 
 describe("analytics consent storage synchronization", () => {
+  it("requires renewed consent after the analytics scope expands", () => {
+    const removeItem = vi.fn();
+    const storage = {
+      getItem: () =>
+        JSON.stringify({ choice: "accepted", decidedAt: 1_000, version: 2 }),
+      removeItem,
+    };
+
+    expect(readAnalyticsConsent(storage, 1_000)).toBeNull();
+    expect(removeItem).toHaveBeenCalledWith(ANALYTICS_CONSENT_KEY);
+  });
+
   it("applies consent changes made in another tab", () => {
     const values = new Map<string, string>();
     const storage = {

@@ -37,9 +37,14 @@ export default function CookiesPage() {
           PostHog analytics is loaded only after acceptance and is configured to
           use local storage rather than cookies. Its local-storage entries hold
           a random anonymous identifier, session state, and event properties
-          needed to count visits and interactions. Query strings, URL fragments,
-          form contents, session recordings, and automatically captured clicks
-          are not sent.
+          needed to count visits and interactions. After consent, PostHog also
+          receives privacy-filtered clicks, page exits and scroll depth,
+          rage/dead clicks, heatmap coordinates, Core Web Vitals, sanitized
+          unhandled-error metadata, and masked session replay. Forms and form
+          controls are excluded from interaction capture and blocked in replay;
+          all inputs are masked. Query strings, URL fragments, form contents,
+          copied text, network bodies or headers, console logs, and raw error
+          messages are not sent.
         </p>
         <AnalyticsPreferences />
       </section>
@@ -48,9 +53,9 @@ export default function CookiesPage() {
         <h2>Change or withdraw your choice</h2>
         <p>
           You can change the setting below at any time. Disabling analytics
-          immediately prevents future analytics events and disables PostHog
-          persistence in this browser; it does not alter anonymous reports
-          already created.
+          immediately stops replay, prevents future analytics events, and resets
+          PostHog&apos;s local anonymous state in this browser; it does not
+          alter anonymous reports already created.
         </p>
       </section>
     </LegalPage>
