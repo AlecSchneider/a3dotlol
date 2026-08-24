@@ -163,7 +163,7 @@ export function EmailSignupForm() {
       </p>
 
       <form
-        className="mt-6 space-y-5"
+        className="ph-no-capture mt-6 space-y-5"
         onFocusCapture={handleFormFocus}
         onSubmit={handleSignup}
       >
@@ -261,7 +261,10 @@ export function EmailSignupForm() {
         <summary className="cursor-pointer text-sm text-[var(--text-primary)] underline decoration-white/30 underline-offset-4">
           Withdraw both email consents
         </summary>
-        <form className="mt-5 space-y-4" onSubmit={handleWithdrawal}>
+        <form
+          className="ph-no-capture mt-5 space-y-4"
+          onSubmit={handleWithdrawal}
+        >
           <div>
             <label
               className="block text-sm text-[var(--text-primary)]"

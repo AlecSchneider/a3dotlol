@@ -29,6 +29,10 @@ If the tech stack changes, keep /stack updated!
 - The Next.js app is under `src/app`; the backend, schema, rate limits, and retention jobs are under `convex`.
 - Convex project: `a3dotlol`; production deployment: `vivid-leopard-322`; team: `alec-schneider` (numeric ID `473998`, Pro); region: US East.
 - PostHog uses EU Cloud shared project `229866`; every event from this repository must include `app_name: "a3dotlol"`.
+- Contact-form delivery targets the private `a3dotlol/#contact` channel
+  (`1530160745331949669`) in the `alec apps` server. The server-side Convex
+  webhook must route only contact submissions there; never expose or document
+  the webhook URL itself.
 - Preserve the existing rule to update `src/app/stack/page.tsx` whenever the documented technology stack changes.
 - Never print, commit, paste into Discord, or otherwise expose `.env` values, database URLs, Supabase credentials, deploy keys, tokens, or other secrets. Use configured local secret stores and ignored environment files.
 

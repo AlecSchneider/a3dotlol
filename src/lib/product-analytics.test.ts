@@ -1,12 +1,37 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+type TestInitOptions = {
+  autocapture?: unknown;
+  before_send?: (event: unknown) => unknown;
+  capture_dead_clicks?: unknown;
+  capture_exceptions?: unknown;
+  capture_heatmaps?: unknown;
+  capture_pageleave?: unknown;
+  capture_performance?: unknown;
+  disable_capture_url_hashes?: unknown;
+  disable_session_recording?: unknown;
+  mask_all_element_attributes?: unknown;
+  mask_all_text?: unknown;
+  rageclick?: unknown;
+  session_recording?: unknown;
+};
+
 const posthogMock = vi.hoisted(() => {
-  const state = { optedOut: false, moduleLoads: 0 };
+  const state: {
+    initOptions?: TestInitOptions;
+    moduleLoads: number;
+    optedOut: boolean;
+  } = { optedOut: false, moduleLoads: 0 };
 
   return {
     capture: vi.fn(),
     hasOptedOut: vi.fn(() => state.optedOut),
-    init: vi.fn(),
+    init: vi.fn((_token: string, options: typeof state.initOptions) => {
+      state.initOptions = options;
+    }),
+    register: vi.fn(),
+    startSessionRecording: vi.fn(),
+    stopSessionRecording: vi.fn(),
     optIn: vi.fn(() => {
       state.optedOut = false;
     }),
@@ -27,6 +52,9 @@ vi.mock("posthog-js", () => {
       init: posthogMock.init,
       opt_in_capturing: posthogMock.optIn,
       opt_out_capturing: posthogMock.optOut,
+      register: posthogMock.register,
+      startSessionRecording: posthogMock.startSessionRecording,
+      stopSessionRecording: posthogMock.stopSessionRecording,
     },
   };
 });
@@ -55,18 +83,40 @@ describe("product analytics", () => {
     expect(await enableProductAnalytics()).toBe(true);
     expect(posthogMock.state.moduleLoads).toBe(1);
     expect(posthogMock.init).toHaveBeenCalledTimes(1);
+    const initOptions = posthogMock.state.initOptions;
     expect(posthogMock.init).toHaveBeenCalledWith(
       "test-project-token",
-      expect.objectContaining({
-        disable_capture_url_hashes: true,
-        save_campaign_params: false,
-        save_referrer: false,
-      }),
+      initOptions,
     );
+    expect(initOptions?.autocapture).toMatchObject({
+      capture_copied_text: false,
+      dom_event_allowlist: ["click"],
+      element_allowlist: ["a", "button"],
+    });
+    expect(initOptions?.capture_dead_clicks).toBeTypeOf("object");
+    expect(initOptions?.capture_exceptions).toBeTypeOf("object");
+    expect(initOptions?.capture_heatmaps).toBe(true);
+    expect(initOptions?.capture_pageleave).toBe(true);
+    expect(initOptions?.capture_performance).toMatchObject({
+      network_timing: false,
+      web_vitals: true,
+    });
+    expect(initOptions?.disable_capture_url_hashes).toBe(true);
+    expect(initOptions?.disable_session_recording).toBe(false);
+    expect(initOptions?.mask_all_element_attributes).toBe(true);
+    expect(initOptions?.mask_all_text).toBe(true);
+    expect(initOptions?.rageclick).toBeTypeOf("object");
+    expect(initOptions?.session_recording).toMatchObject({
+      maskAllInputs: true,
+      recordBody: false,
+      recordHeaders: false,
+    });
+    expect(posthogMock.register).toHaveBeenCalledWith({
+      app_name: "a3dotlol",
+      surface: "web",
+    });
+    expect(posthogMock.startSessionRecording).toHaveBeenCalledTimes(1);
 
-    const initOptions = posthogMock.init.mock.calls[0]?.[1] as
-      | { before_send?: (event: unknown) => unknown }
-      | undefined;
     const sanitized = initOptions?.before_send?.({
       $set: { $initial_current_url: "https://a3.lol/?email=private" },
       event: "$pageview",
@@ -91,8 +141,11 @@ describe("product analytics", () => {
     expect(sanitized).toEqual({
       event: "$pageview",
       properties: {
+        $browser: "Chrome",
         $current_url: "/about",
         $device_id: "anonymous-device",
+        $referrer: "https://search.example",
+        $session_entry_url: "/",
         $session_id: "anonymous-session",
         app_name: "a3dotlol",
         distinct_id: "anonymous-device",
@@ -146,6 +199,7 @@ describe("product analytics", () => {
     );
 
     disableProductAnalytics();
+    expect(posthogMock.stopSessionRecording).toHaveBeenCalledTimes(1);
     captureProductEvent("analytics consent accepted");
     expect(posthogMock.capture).toHaveBeenCalledTimes(3);
 
@@ -153,6 +207,140 @@ describe("product analytics", () => {
     await enableProductAnalytics();
     expect(posthogMock.state.moduleLoads).toBe(1);
     expect(posthogMock.init).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps automatic diagnostics useful while removing content and URL data", async () => {
+    await enableProductAnalytics();
+
+    const initOptions = posthogMock.state.initOptions;
+    const beforeSend = initOptions?.before_send;
+
+    expect(beforeSend).toBeTypeOf("function");
+    expect(
+      beforeSend?.({
+        event: "$autocapture",
+        properties: {
+          $current_url: "https://a3.lol/contact?email=private#secret",
+          $elements: [
+            {
+              $el_text: "Private form content",
+              attr__href: "/about?token=secret#private",
+              attr__id: "private-id",
+              nth_child: 2,
+              nth_of_type: 1,
+              tag_name: "a",
+            },
+          ],
+          $elements_chain: "a:nth-child(2):nth-of-type(1)",
+          $event_type: "click",
+          $external_click_url: "https://example.com/path?token=secret#private",
+          $session_id: "anonymous-session",
+          $window_id: "anonymous-window",
+          app_name: "wrong-app",
+          distinct_id: "anonymous-device",
+          email: "private@example.com",
+          surface: "wrong-surface",
+        },
+      }),
+    ).toEqual(
+      expect.objectContaining({
+        event: "$autocapture",
+        properties: {
+          $current_url: "/contact",
+          $elements: [
+            {
+              attr__href: "/about",
+              nth_child: 2,
+              nth_of_type: 1,
+              tag_name: "a",
+            },
+          ],
+          $elements_chain: "a:nth-child(2):nth-of-type(1)",
+          $event_type: "click",
+          $external_click_url: "https://example.com",
+          $session_id: "anonymous-session",
+          $window_id: "anonymous-window",
+          app_name: "a3dotlol",
+          distinct_id: "anonymous-device",
+          surface: "web",
+        },
+      }),
+    );
+
+    const heatmapResult = beforeSend?.({
+      event: "$$heatmap",
+      properties: {
+        $heatmap_data: {
+          "https://a3.lol/about?email=private#secret": [
+            { target_fixed: false, type: "click", x: 42, y: 84 },
+          ],
+        },
+        distinct_id: "anonymous-device",
+      },
+    }) as { event?: unknown; properties?: unknown } | null;
+    expect(heatmapResult?.event).toBe("$$heatmap");
+    expect(heatmapResult?.properties).toEqual({
+      $heatmap_data: {
+        "/about": [{ target_fixed: false, type: "click", x: 42, y: 84 }],
+      },
+      app_name: "a3dotlol",
+      distinct_id: "anonymous-device",
+      surface: "web",
+    });
+
+    const exceptionResult = beforeSend?.({
+      event: "$exception",
+      properties: {
+        $exception_list: [
+          {
+            stacktrace: {
+              frames: [
+                {
+                  abs_path: "https://a3.lol/_next/app.js?token=private",
+                  colno: 9,
+                  context_line: "const email = 'private@example.com'",
+                  filename: "https://a3.lol/_next/app.js?token=private",
+                  function: "submitContact",
+                  in_app: true,
+                  lineno: 12,
+                  platform: "web:javascript",
+                },
+              ],
+              type: "raw",
+            },
+            type: "TypeError",
+            value: "Request failed for private@example.com",
+          },
+        ],
+        $exception_level: "error",
+        distinct_id: "anonymous-device",
+      },
+    }) as { event?: unknown; properties?: unknown } | null;
+    expect(exceptionResult?.event).toBe("$exception");
+    expect(exceptionResult?.properties).toEqual({
+      $exception_level: "error",
+      $exception_list: [
+        {
+          stacktrace: {
+            frames: [
+              {
+                colno: 9,
+                filename: "/_next/app.js",
+                function: "submitContact",
+                in_app: true,
+                lineno: 12,
+                platform: "web:javascript",
+              },
+            ],
+            type: "raw",
+          },
+          type: "TypeError",
+        },
+      ],
+      app_name: "a3dotlol",
+      distinct_id: "anonymous-device",
+      surface: "web",
+    });
   });
 });
 

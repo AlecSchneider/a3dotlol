@@ -1,5 +1,7 @@
 export const ANALYTICS_CONSENT_KEY = "analytics-consent";
-export const ANALYTICS_CONSENT_VERSION = 2;
+// Version 3 covers consent for masked session replay and automatic UX,
+// performance, and error signals. Older, narrower grants must be renewed.
+export const ANALYTICS_CONSENT_VERSION = 3;
 export const ANALYTICS_CONSENT_CHANGED_EVENT = "analytics-consent-changed";
 
 const ANALYTICS_CONSENT_MAX_AGE_MS = 180 * 24 * 60 * 60 * 1000;

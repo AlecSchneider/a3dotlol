@@ -76,7 +76,7 @@ export function ContactForm({ formName }: { formName: "contact" | "support" }) {
 
   return (
     <form
-      className="mt-8 space-y-5"
+      className="ph-no-capture mt-8 space-y-5"
       onFocusCapture={handleFormFocus}
       onSubmit={handleSubmit}
     >
