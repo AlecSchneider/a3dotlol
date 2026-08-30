@@ -11,6 +11,7 @@
 import type * as contact from "../contact.js";
 import type * as crons from "../crons.js";
 import type * as lib_contactDelivery from "../lib/contactDelivery.js";
+import type * as lib_rateLimits from "../lib/rateLimits.js";
 import type * as newsletter from "../newsletter.js";
 
 import type {
@@ -23,6 +24,7 @@ declare const fullApi: ApiFromModules<{
   contact: typeof contact;
   crons: typeof crons;
   "lib/contactDelivery": typeof lib_contactDelivery;
+  "lib/rateLimits": typeof lib_rateLimits;
   newsletter: typeof newsletter;
 }>;
 

@@ -8,6 +8,7 @@ import {
   mutation,
   type MutationCtx,
 } from "./_generated/server";
+import { passesLayeredRateLimits } from "./lib/rateLimits";
 
 const CONSENT_VERSION = "2026-08-20";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,7 +19,6 @@ const MAX_LOCALE_LENGTH = 35;
 const PRODUCT_KEY = "a3dotlol";
 const PUBLISHER_KEY = "alec-schneider-solutions";
 const RETENTION_MS = 365 * DAY;
-const SYNTHETIC_SMOKE_EMAIL = "codex-email-signup-smoke@example.com";
 
 const rateLimiter = new RateLimiter(components.rateLimiter, {
   emailSignupBurst: {
@@ -30,6 +30,16 @@ const rateLimiter = new RateLimiter(components.rateLimiter, {
     kind: "fixed window",
     period: DAY,
     rate: 500,
+  },
+  emailWithdrawalBurst: {
+    kind: "fixed window",
+    period: MINUTE,
+    rate: 10,
+  },
+  emailWithdrawalDaily: {
+    kind: "fixed window",
+    period: DAY,
+    rate: 1_000,
   },
 });
 
@@ -67,7 +77,7 @@ export const subscribe = mutation({
       throw new ConvexError("Choose at least one email purpose.");
     }
 
-    await enforceRateLimits(ctx);
+    await enforceSubscribeRateLimits(ctx, normalizedEmail);
 
     const now = Date.now();
     const contact = await findOrCreateContact(ctx, normalizedEmail, now);
@@ -187,7 +197,7 @@ export const withdraw = mutation({
       throw new ConvexError("Consent version is invalid.");
     }
 
-    await enforceRateLimits(ctx);
+    await enforceWithdrawalRateLimits(ctx, normalizedEmail);
 
     const contact = await ctx.db
       .query("emailContacts")
@@ -276,29 +286,6 @@ export const purgeExpired = internalMutation({
   },
 });
 
-export const removeSyntheticSmokeRecord = internalMutation({
-  args: {},
-  returns: v.union(
-    v.literal("absent"),
-    v.literal("partial"),
-    v.literal("removed"),
-  ),
-  handler: async (ctx) => {
-    const contact = await ctx.db
-      .query("emailContacts")
-      .withIndex("by_normalized_email", (query) =>
-        query.eq("normalizedEmail", SYNTHETIC_SMOKE_EMAIL),
-      )
-      .unique();
-
-    if (!contact) {
-      return "absent";
-    }
-
-    return (await deleteContactData(ctx, contact._id)) ? "removed" : "partial";
-  },
-});
-
 function normalizeEmail(value: string) {
   const normalized = value.trim().toLowerCase();
 
@@ -314,23 +301,46 @@ function normalizeEmail(value: string) {
 }
 
 function normalizeLocale(value: string | undefined) {
-  const locale = value?.trim() || "und";
+  const locale = value?.trim();
 
-  if (
-    locale.length > MAX_LOCALE_LENGTH ||
-    (locale !== "und" && !LOCALE_PATTERN.test(locale))
-  ) {
+  if (!locale) {
+    return "und";
+  }
+
+  if (locale.length > MAX_LOCALE_LENGTH || !LOCALE_PATTERN.test(locale)) {
     throw new ConvexError("The locale is invalid.");
   }
 
   return locale;
 }
 
-async function enforceRateLimits(ctx: MutationCtx) {
-  const burst = await rateLimiter.limit(ctx, "emailSignupBurst");
-  const daily = await rateLimiter.limit(ctx, "emailSignupDaily");
+async function enforceSubscribeRateLimits(
+  ctx: MutationCtx,
+  normalizedEmail: string,
+) {
+  const withinRateLimits = await passesLayeredRateLimits(
+    () => rateLimiter.limit(ctx, "emailSignupBurst", { key: normalizedEmail }),
+    () => rateLimiter.limit(ctx, "emailSignupDaily"),
+  );
 
-  if (!burst.ok || !daily.ok) {
+  if (!withinRateLimits) {
+    throw new ConvexError("Too many requests. Please wait and try again.");
+  }
+}
+
+async function enforceWithdrawalRateLimits(
+  ctx: MutationCtx,
+  normalizedEmail: string,
+) {
+  const withinRateLimits = await passesLayeredRateLimits(
+    () =>
+      rateLimiter.limit(ctx, "emailWithdrawalBurst", {
+        key: normalizedEmail,
+      }),
+    () => rateLimiter.limit(ctx, "emailWithdrawalDaily"),
+  );
+
+  if (!withinRateLimits) {
     throw new ConvexError("Too many requests. Please wait and try again.");
   }
 }

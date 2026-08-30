@@ -7,6 +7,7 @@ import { links, youtubeHref } from "./src/lib/links.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  outputFileTracingRoot: import.meta.dirname,
   images: {
     remotePatterns: [
       {
