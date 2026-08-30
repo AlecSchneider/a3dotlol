@@ -9,6 +9,7 @@ import {
   internalQuery,
 } from "./_generated/server";
 import { recordDiscordDelivery } from "./lib/contactDelivery";
+import { passesLayeredRateLimits } from "./lib/rateLimits";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_EMAIL_LENGTH = 254;
@@ -60,10 +61,12 @@ export const submit = action({
 
     validateContactInput({ email, message, name, subject });
 
-    const burstLimit = await rateLimiter.limit(ctx, "contactBurst");
-    const dailyLimit = await rateLimiter.limit(ctx, "contactDaily");
+    const withinRateLimits = await passesLayeredRateLimits(
+      () => rateLimiter.limit(ctx, "contactBurst", { key: email }),
+      () => rateLimiter.limit(ctx, "contactDaily"),
+    );
 
-    if (!burstLimit.ok || !dailyLimit.ok) {
+    if (!withinRateLimits) {
       throw new ConvexError(
         "Too many contact requests. Please wait and try again.",
       );

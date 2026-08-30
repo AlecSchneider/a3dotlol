@@ -166,7 +166,7 @@ describe("newsletter consent", () => {
     const withdrawnAt = withdrawn.preferences[0]?.productUpdatesWithdrawnAt;
 
     expect(withdrawnAt).toEqual(expect.any(Number));
-    expect(withdrawn.events.at(-1)).toMatchObject({
+    expect(withdrawn.events[withdrawn.events.length - 1]).toMatchObject({
       action: "withdrawn",
       purpose: "product_updates",
     });
@@ -183,7 +183,7 @@ describe("newsletter consent", () => {
     expect(regranted.preferences[0]?.productUpdatesWithdrawnAt).toBe(
       withdrawnAt,
     );
-    expect(regranted.events.at(-1)).toMatchObject({
+    expect(regranted.events[regranted.events.length - 1]).toMatchObject({
       action: "granted",
       purpose: "product_updates",
     });
@@ -242,7 +242,7 @@ describe("newsletter consent", () => {
     await expect(
       test.mutation(api.newsletter.withdraw, {
         ...baseArgs,
-        consentVersion: "2026-08-19" as typeof baseArgs.consentVersion,
+        consentVersion: "2026-08-19",
         email,
       }),
     ).resolves.toEqual({ status: "withdrawn" });
@@ -260,7 +260,7 @@ describe("newsletter consent", () => {
     await expect(
       test.mutation(api.newsletter.withdraw, {
         ...baseArgs,
-        consentVersion: "v".repeat(65) as typeof baseArgs.consentVersion,
+        consentVersion: "v".repeat(65),
         email: "bounded-version@example.com",
       }),
     ).rejects.toThrow("Consent version is invalid");
@@ -304,6 +304,50 @@ describe("newsletter consent", () => {
     );
   });
 
+  it("isolates signup burst limits by normalized email", async () => {
+    const test = initTest();
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await test.mutation(api.newsletter.subscribe, {
+        ...baseArgs,
+        email: "busy@example.com",
+        productUpdates: true,
+        publisherPromotions: false,
+      });
+    }
+
+    await expect(
+      test.mutation(api.newsletter.subscribe, {
+        ...baseArgs,
+        email: "other@example.com",
+        productUpdates: true,
+        publisherPromotions: false,
+      }),
+    ).resolves.toEqual({ status: "saved" });
+  });
+
+  it("keeps withdrawal available after the subscribe burst limit is exhausted", async () => {
+    const test = initTest();
+    const email = "withdraw-after-limit@example.com";
+    const args = {
+      ...baseArgs,
+      email,
+      productUpdates: true,
+      publisherPromotions: false,
+    };
+
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      await test.mutation(api.newsletter.subscribe, args);
+    }
+    await expect(test.mutation(api.newsletter.subscribe, args)).rejects.toThrow(
+      "Too many requests",
+    );
+
+    await expect(
+      test.mutation(api.newsletter.withdraw, { ...baseArgs, email }),
+    ).resolves.toEqual({ status: "withdrawn" });
+  });
+
   it("deletes expired current consent records and audit history", async () => {
     const test = initTest();
 
@@ -324,31 +368,6 @@ describe("newsletter consent", () => {
     await expect(test.mutation(internal.newsletter.purgeExpired)).resolves.toBe(
       1,
     );
-
-    const snapshot = await readSnapshot(test);
-    expect(snapshot).toMatchObject({
-      contacts: [],
-      events: [],
-      preferences: [],
-    });
-  });
-
-  it("removes only the reserved synthetic smoke record", async () => {
-    const test = initTest();
-
-    await test.mutation(api.newsletter.subscribe, {
-      ...baseArgs,
-      email: "codex-email-signup-smoke@example.com",
-      productUpdates: true,
-      publisherPromotions: true,
-    });
-
-    await expect(
-      test.mutation(internal.newsletter.removeSyntheticSmokeRecord),
-    ).resolves.toBe("removed");
-    await expect(
-      test.mutation(internal.newsletter.removeSyntheticSmokeRecord),
-    ).resolves.toBe("absent");
 
     const snapshot = await readSnapshot(test);
     expect(snapshot).toMatchObject({

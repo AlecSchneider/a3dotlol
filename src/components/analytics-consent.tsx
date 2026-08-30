@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import {
   ANALYTICS_CONSENT_CHANGED_EVENT,
@@ -20,10 +20,16 @@ import {
 
 type ConsentState = AnalyticsConsentChoice | null;
 
+const subscribeToHydration = () => () => undefined;
+
 export function AnalyticsConsent() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentState>(null);
-  const [loaded, setLoaded] = useState(false);
+  const loaded = useSyncExternalStore(
+    subscribeToHydration,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -59,8 +65,6 @@ export function AnalyticsConsent() {
       ANALYTICS_CONSENT_CHANGED_EVENT,
       handleConsentChanged,
     );
-    setLoaded(true);
-
     return () => {
       cancelled = true;
       unsubscribeFromStorage();
