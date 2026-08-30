@@ -76,6 +76,27 @@ describe("product analytics", () => {
     });
   });
 
+  it("clears persisted PostHog identity without loading the SDK", () => {
+    const localRemoveItem = vi.fn();
+    const sessionRemoveItem = vi.fn();
+
+    vi.stubGlobal("window", {
+      localStorage: { removeItem: localRemoveItem },
+      location: { origin: "https://a3.lol" },
+      sessionStorage: { removeItem: sessionRemoveItem },
+    });
+
+    disableProductAnalytics();
+
+    expect(posthogMock.state.moduleLoads).toBe(0);
+    expect(localRemoveItem).toHaveBeenCalledWith(
+      "ph_test-project-token_posthog",
+    );
+    expect(sessionRemoveItem).toHaveBeenCalledWith(
+      "ph_test-project-token_posthog",
+    );
+  });
+
   it("captures bounded CTA and navigation events after consent", async () => {
     // The SDK must stay unloaded until a visitor opts in.
     expect(posthogMock.state.moduleLoads).toBe(0);

@@ -1,11 +1,6 @@
 "use client";
 
-import type {
-  BeforeSendFn,
-  PostHog,
-  PostHogConfig,
-  Properties,
-} from "posthog-js";
+import type { BeforeSendFn, PostHog, PostHogConfig } from "posthog-js";
 
 const POSTHOG_API_HOST = "https://eu.i.posthog.com";
 const POSTHOG_UI_HOST = "https://eu.posthog.com";
@@ -309,6 +304,7 @@ export async function enableProductAnalytics() {
 
 export function disableProductAnalytics() {
   analyticsDesired = false;
+  clearPersistedPostHogState();
 
   if (posthogInstance && initialized) {
     try {
@@ -331,6 +327,36 @@ export function disableProductAnalytics() {
       .catch(() => {
         // The visitor is already opted out in local state.
       });
+  }
+}
+
+function clearPersistedPostHogState() {
+  const projectToken = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+
+  if (!projectToken || typeof window === "undefined") {
+    return;
+  }
+
+  const persistenceToken = projectToken
+    .replace(/\+/g, "PL")
+    .replace(/\//g, "SL")
+    .replace(/=/g, "EQ");
+  const persistenceKey = `ph_${persistenceToken}_posthog`;
+  const keys = [
+    persistenceKey,
+    `${persistenceKey}__flags`,
+    `${persistenceKey}__surveys`,
+    `__ph_opt_in_out_${projectToken}`,
+  ];
+
+  for (const storage of [window.localStorage, window.sessionStorage]) {
+    try {
+      for (const key of keys) {
+        storage.removeItem(key);
+      }
+    } catch {
+      // Consent withdrawal still applies in memory when storage is blocked.
+    }
   }
 }
 
@@ -817,5 +843,5 @@ function pickAllowedProperties<Event extends ProductEventName>(
     Object.entries(properties).filter(
       ([key, value]) => allowedProperties.has(key) && value !== undefined,
     ),
-  ) as Properties;
+  );
 }
