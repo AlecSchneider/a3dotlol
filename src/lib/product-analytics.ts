@@ -89,6 +89,14 @@ const EVENT_PROPERTY_ALLOWLIST: Record<ProductEventName, readonly string[]> = {
   "primary call to action clicked": ["cta_key", "placement"],
 };
 
+// Precomputed once at module load so capturing an event never rebuilds the
+// allowlist Set.
+const EVENT_PROPERTY_ALLOWLIST_SETS = Object.fromEntries(
+  (Object.keys(EVENT_PROPERTY_ALLOWLIST) as ProductEventName[]).map(
+    (eventName) => [eventName, new Set(EVENT_PROPERTY_ALLOWLIST[eventName])],
+  ),
+) as unknown as Record<ProductEventName, ReadonlySet<string>>;
+
 // The posthog-js SDK is only downloaded after a visitor accepts analytics.
 // Until then this module stays inert and the vendor chunk is never fetched.
 let posthogPromise: Promise<PostHog> | null = null;
@@ -339,7 +347,7 @@ function pickAllowedProperties<Event extends ProductEventName>(
   eventName: Event,
   properties: ProductEventMap[Event],
 ) {
-  const allowedProperties = new Set(EVENT_PROPERTY_ALLOWLIST[eventName]);
+  const allowedProperties = EVENT_PROPERTY_ALLOWLIST_SETS[eventName];
 
   return Object.fromEntries(
     Object.entries(properties).filter(

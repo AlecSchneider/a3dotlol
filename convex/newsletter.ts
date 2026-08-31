@@ -315,8 +315,10 @@ function normalizeLocale(value: string | undefined) {
 }
 
 async function enforceRateLimits(ctx: MutationCtx) {
-  const burst = await rateLimiter.limit(ctx, "emailSignupBurst");
-  const daily = await rateLimiter.limit(ctx, "emailSignupDaily");
+  const [burst, daily] = await Promise.all([
+    rateLimiter.limit(ctx, "emailSignupBurst"),
+    rateLimiter.limit(ctx, "emailSignupDaily"),
+  ]);
 
   if (!burst.ok || !daily.ok) {
     throw new ConvexError("Too many requests. Please wait and try again.");

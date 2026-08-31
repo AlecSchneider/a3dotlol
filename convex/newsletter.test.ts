@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import rateLimiterTest from "@convex-dev/rate-limiter/test";
 import { convexTest } from "convex-test";
 import { describe, expect, it } from "vitest";
@@ -293,6 +296,24 @@ describe("newsletter consent", () => {
       events: [],
       preferences: [],
     });
+  });
+
+  it("checks burst and daily limits concurrently", () => {
+    // Sequential `await rateLimiter.limit(...)` calls serialize the two
+    // component round-trips. The fix issues both checks in the same tick via
+    // Promise.all so they run concurrently.
+    const source = readFileSync(
+      join(import.meta.dirname, "newsletter.ts"),
+      "utf8",
+    );
+
+    const enforce = source.match(
+      /async function enforceRateLimits[\s\S]*?\n\}/,
+    );
+    expect(enforce?.[0]).toMatch(/Promise\.all\(/);
+    expect(enforce?.[0]).not.toMatch(
+      /await\s+rateLimiter\.limit[\s\S]*await\s+rateLimiter\.limit/,
+    );
   });
 
   it("removes only the reserved synthetic smoke record", async () => {
