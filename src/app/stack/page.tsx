@@ -72,6 +72,12 @@ const stackItems: StackItem[] = [
       "The database and backend for contact routing and consented email-update collection. Convex validates requests, enforces abuse limits, preserves consent history, schedules retention cleanup, and runs in US East.",
   },
   {
+    name: "Effect",
+    href: "https://effect.website/",
+    description:
+      "Server-side contact workflows use a pinned Effect v4 release candidate for typed failures, validation, scoped Discord requests, and retention cleanup. Convex still owns the database and scheduling.",
+  },
+  {
     name: "Discord",
     href: "https://discord.com/",
     description:
