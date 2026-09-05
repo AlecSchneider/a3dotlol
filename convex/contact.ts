@@ -32,6 +32,8 @@ const rateLimiter = new RateLimiter(components.rateLimiter, {
   },
 });
 
+let cachedWebhookUrl: URL | null = null;
+
 const contactDeliveryValidator = v.object({
   _id: v.id("contactDeliveries"),
   deleteAfter: v.number(),
@@ -218,13 +220,19 @@ function deleteDiscordMessage(webhookUrl: string, messageId: string) {
 }
 
 function getWebhookUrl() {
-  const value = process.env.CONTACT_DISCORD_WEBHOOK;
+  cachedWebhookUrl ??= parseDiscordWebhookUrl(
+    process.env.CONTACT_DISCORD_WEBHOOK,
+  );
 
-  if (!value) {
+  return cachedWebhookUrl.toString();
+}
+
+function parseDiscordWebhookUrl(raw: string | undefined) {
+  if (!raw) {
     throw new Error("Contact webhook is not configured.");
   }
 
-  const url = new URL(value);
+  const url = new URL(raw);
   if (
     url.protocol !== "https:" ||
     url.hostname !== "discord.com" ||
@@ -233,7 +241,7 @@ function getWebhookUrl() {
     throw new Error("Contact webhook configuration is invalid.");
   }
 
-  return url.toString();
+  return url;
 }
 
 function readDiscordMessageId(value: unknown) {

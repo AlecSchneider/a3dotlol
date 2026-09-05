@@ -159,6 +159,15 @@ const AUTOMATIC_EVENT_PROPERTY_ALLOWLIST: Record<string, readonly string[]> = {
   $web_vitals: [],
 };
 
+// Precomputed once at module load so capturing an event never rebuilds the
+// allowlist Set.
+const EVENT_PROPERTY_ALLOWLIST_SETS = Object.fromEntries(
+  Object.entries({
+    ...AUTOMATIC_EVENT_PROPERTY_ALLOWLIST,
+    ...EVENT_PROPERTY_ALLOWLIST,
+  }).map(([eventName, properties]) => [eventName, new Set(properties)]),
+) as Record<string, ReadonlySet<string>>;
+
 // The posthog-js SDK is only downloaded after a visitor accepts analytics.
 // Until then this module stays inert and the vendor chunk is never fetched.
 let posthogPromise: Promise<PostHog> | null = null;
@@ -452,24 +461,13 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
     return null;
   }
 
-  const isCustomEvent = Object.hasOwn(
-    EVENT_PROPERTY_ALLOWLIST,
-    captureResult.event,
-  );
-  const isAutomaticEvent = Object.hasOwn(
-    AUTOMATIC_EVENT_PROPERTY_ALLOWLIST,
-    captureResult.event,
-  );
-
-  if (!isCustomEvent && !isAutomaticEvent) {
+  if (!Object.hasOwn(EVENT_PROPERTY_ALLOWLIST_SETS, captureResult.event)) {
     return null;
   }
 
-  const eventPropertyAllowlist = new Set(
-    isCustomEvent
-      ? EVENT_PROPERTY_ALLOWLIST[captureResult.event as ProductEventName]
-      : (AUTOMATIC_EVENT_PROPERTY_ALLOWLIST[captureResult.event] ?? []),
-  );
+  const eventPropertyAllowlist =
+    EVENT_PROPERTY_ALLOWLIST_SETS[captureResult.event]!;
+  let sanitizedElements: SafeElement[] | undefined;
   const properties = Object.fromEntries(
     Object.entries(captureResult.properties).flatMap(([key, value]) => {
       if (
@@ -520,12 +518,12 @@ const sanitizePostHogEvent: BeforeSendFn = (captureResult) => {
       }
 
       if (key === "$elements") {
-        const sanitizedValue = sanitizeElements(value);
-        return sanitizedValue.length ? [[key, sanitizedValue]] : [];
+        sanitizedElements ??= sanitizeElements(value);
+        return sanitizedElements.length ? [[key, sanitizedElements]] : [];
       }
 
       if (key === "$elements_chain") {
-        const sanitizedElements = sanitizeElements(
+        sanitizedElements ??= sanitizeElements(
           captureResult.properties.$elements,
         );
         const sanitizedValue = buildElementsChain(sanitizedElements);
@@ -837,7 +835,7 @@ function pickAllowedProperties<Event extends ProductEventName>(
   eventName: Event,
   properties: ProductEventMap[Event],
 ) {
-  const allowedProperties = new Set(EVENT_PROPERTY_ALLOWLIST[eventName]);
+  const allowedProperties = EVENT_PROPERTY_ALLOWLIST_SETS[eventName]!;
 
   return Object.fromEntries(
     Object.entries(properties).filter(
