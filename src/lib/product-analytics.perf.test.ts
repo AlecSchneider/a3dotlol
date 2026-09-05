@@ -80,30 +80,4 @@ describe("webhook configuration validation", () => {
     const getter = /function getWebhookUrl\(\)[\s\S]*?\n\}/.exec(source);
     expect(getter?.[0]).not.toMatch(/new URL\(/);
   });
-
-  it("rejects protocol-relative and wrong-host webhook URLs", () => {
-    expect(() =>
-      assertValidDiscordWebhook(
-        "https://discord.com.evil.test/api/webhooks/1/x",
-      ),
-    ).toThrow();
-    expect(() =>
-      assertValidDiscordWebhook("http://discord.com/api/webhooks/1/x"),
-    ).toThrow();
-    expect(() =>
-      assertValidDiscordWebhook("https://discord.com/api/webhooks/1/x"),
-    ).not.toThrow();
-  });
 });
-
-function assertValidDiscordWebhook(raw: string) {
-  const url = new URL(raw);
-  if (
-    url.protocol !== "https:" ||
-    url.hostname !== "discord.com" ||
-    !url.pathname.startsWith("/api/webhooks/")
-  ) {
-    throw new Error("Contact webhook configuration is invalid.");
-  }
-  return url;
-}
