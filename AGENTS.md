@@ -1,5 +1,17 @@
 We're live streaming vibe coding with you, NEVER print any .env variables or anything else which might be compromisable in clear text.
 
+## Effect
+
+- The contact action workflow uses Effect `4.0.0-rc.112`, pinned exactly.
+- Before writing Effect code, read `node_modules/effect/AGENTS.md` completely,
+  follow its relevant examples, and look up APIs in `node_modules/effect/src`.
+  Do not use v3 examples for this v4 RC or change release channels implicitly.
+- Keep Effect server-side in `convex/lib/contactWorkflow.ts`. Convex owns
+  validators, transactions, scheduling and subscriptions; React and PostHog own
+  UI and consent lifecycles. Run effects only at the Convex action boundary.
+- Never log Schema/HTTP errors, request contents, webhook URLs, or span
+  attributes containing personal data. Preserve the no-retry notification policy.
+
 Always check your code before stopping your task, for e.g. running something like next lint or creating a new build.
 
 If the tech stack changes, keep /stack updated!
