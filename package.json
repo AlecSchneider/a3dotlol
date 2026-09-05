@@ -10,6 +10,7 @@
     "core-js@3.49.0": false,
     "esbuild@0.27.0": true,
     "fsevents@2.3.3": false,
+    "msgpackr-extract@3.0.4": false,
     "unrs-resolver@1.12.2": true
   },
   "scripts": {
@@ -32,6 +33,7 @@
     "@convex-dev/rate-limiter": "^0.3.2",
     "@t3-oss/env-nextjs": "^0.13.11",
     "convex": "^1.45.0",
+    "effect": "4.0.0-rc.112",
     "next": "^15.5.24",
     "posthog-js": "^1.422.5",
     "react": "^19.2.8",
