@@ -1,8 +1,9 @@
 import rateLimiterTest from "@convex-dev/rate-limiter/test";
+import { DAY, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
 import { convexTest } from "convex-test";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { api, internal } from "../../convex/_generated/api";
+import { api, components, internal } from "../../convex/_generated/api";
 import schema from "../../convex/schema";
 import { modules } from "../../convex/test.setup";
 
@@ -29,6 +30,64 @@ function setup(webhook: string | undefined) {
 }
 
 describe("contact action webhook contract", () => {
+  it("allocates no email buckets after the global quota is exhausted", async () => {
+    vi.useFakeTimers();
+    const { test, fetchMock } = setup(
+      "https://discord.com/api/webhooks/test/test",
+    );
+    const limiter = new RateLimiter(components.rateLimiter, {
+      contactBurst: { kind: "fixed window", period: MINUTE, rate: 10 },
+      contactDaily: { kind: "fixed window", period: DAY, rate: 200 },
+    });
+    await test.run((ctx) => limiter.limit(ctx, "contactDaily", { count: 200 }));
+    for (let i = 0; i < 5; i++) {
+      const email = `denied-${i}@example.com`;
+      await expect(
+        test.action(api.contact.submit, { ...input, email }),
+      ).rejects.toThrow("Too many contact requests");
+      const bucket = await test.run((ctx) =>
+        limiter.getValue(ctx, "contactBurst", { key: email }),
+      );
+      expect(bucket.ts).toBe(0);
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(
+      await test.run((ctx) =>
+        ctx.db.system.query("_scheduled_functions").collect(),
+      ),
+    ).toHaveLength(0);
+  });
+
+  it("expires idle email quota state without clearing the daily ceiling", async () => {
+    vi.useFakeTimers();
+    const { test } = setup("https://discord.com/api/webhooks/test/test");
+    const limiter = new RateLimiter(components.rateLimiter, {
+      contactBurst: { kind: "fixed window", period: MINUTE, rate: 10 },
+      contactDaily: { kind: "fixed window", period: DAY, rate: 200 },
+    });
+    await test.action(api.contact.submit, input);
+    expect(
+      (
+        await test.run((ctx) =>
+          limiter.getValue(ctx, "contactBurst", { key: input.email }),
+        )
+      ).ts,
+    ).toBeGreaterThan(0);
+    await test.finishAllScheduledFunctions(() =>
+      vi.advanceTimersByTime(2 * MINUTE),
+    );
+    expect(
+      (
+        await test.run((ctx) =>
+          limiter.getValue(ctx, "contactBurst", { key: input.email }),
+        )
+      ).ts,
+    ).toBe(0);
+    expect(
+      (await test.run((ctx) => limiter.getValue(ctx, "contactDaily"))).value,
+    ).toBe(199);
+  });
+
   it("purges confirmed deletions but retains failed and unexpired records", async () => {
     const { test, fetchMock } = setup(
       "https://discord.com/api/webhooks/test/test",
