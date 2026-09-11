@@ -66,6 +66,12 @@ const stackItems: StackItem[] = [
       "The codebase foundation. It gives the project the Next.js app router structure, TypeScript setup, and environment validation this site uses.",
   },
   {
+    name: "pnpm",
+    href: "https://pnpm.io/",
+    description:
+      "Dependency management with a pinned package-manager version, a shared lockfile for local and CI installs, and explicit approval for dependency build scripts.",
+  },
+  {
     name: "Convex",
     href: "https://www.convex.dev/",
     description:

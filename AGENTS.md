@@ -32,6 +32,9 @@ Do not widen a review into implementation or repeat passing gates without cause.
   [project service reference](docs/agent-services.md).
 
 Layout: `src/app` (Next.js), `convex` (backend).
-Commands: `npm run check`, `npm run lint`, `npm run test:once`,
-`npm run typecheck`, `npm run format:check`, `npm run build`.
+Use Node 24.x and the exact pnpm version in `package.json` (10.34.5).
+Install with `pnpm install --frozen-lockfile`; `pnpm-lock.yaml` is authoritative.
+Preserve the overrides and explicit dependency-script policy in `pnpm-workspace.yaml`.
+Commands: `pnpm run check`, `pnpm run lint`, `pnpm run test:once`,
+`pnpm run typecheck`, `pnpm run format:check`, `pnpm run build`.
 Update `src/app/stack/page.tsx` when the documented technology stack changes.
