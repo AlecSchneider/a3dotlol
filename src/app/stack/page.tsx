@@ -63,7 +63,7 @@ const stackItems: StackItem[] = [
     name: "create-t3-app",
     href: "https://create.t3.gg/",
     description:
-      "The codebase foundation. It gives the project the Next.js app router structure, TypeScript setup, and environment validation this site uses.",
+      "The codebase foundation. The site now uses Next.js 16 with Turbopack, React 19.3, TypeScript 6, and explicit environment validation.",
   },
   {
     name: "pnpm",

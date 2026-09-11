@@ -2,12 +2,10 @@
 overrides:
   postcss: "$postcss"
   sharp: "0.35.4"
-  # Preserve Vitest's nested npm resolution instead of deduplicating to 4.0.7.
-  "vitest@4.1.11>picomatch": "4.0.5"
 
 # Preserve the reviewed npm lifecycle-script policy; all other scripts stay blocked.
 allowBuilds:
-  core-js@3.49.0: false
+  core-js@3.50.0: false
   esbuild@0.27.0: true
   fsevents@2.3.3: false
   msgpackr-extract@3.0.4: false

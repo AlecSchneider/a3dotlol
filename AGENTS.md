@@ -17,6 +17,10 @@ visible on the live stream.
 
 ## Task routing and verification
 
+Before changing Next.js code, read the relevant version-matched documentation
+in `node_modules/next/dist/docs/`. Next.js 16 uses Turbopack for dev and build;
+lint remains a separate required gate.
+
 Follow `/Users/clawdy/AGENTS.md` and its task-selected policies. Read the
 applicable references below completely before using or changing those surfaces.
 Paths inside the references are relative to this repository root unless stated
@@ -38,3 +42,13 @@ Preserve the overrides and explicit dependency-script policy in `pnpm-workspace.
 Commands: `pnpm run check`, `pnpm run lint`, `pnpm run test:once`,
 `pnpm run typecheck`, `pnpm run format:check`, `pnpm run build`.
 Update `src/app/stack/page.tsx` when the documented technology stack changes.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->
