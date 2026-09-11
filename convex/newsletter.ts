@@ -1,14 +1,13 @@
-import { DAY, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
+import { DAY } from "@convex-dev/rate-limiter";
 import { ConvexError, v } from "convex/values";
 
-import { components } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import {
   internalMutation,
   mutation,
   type MutationCtx,
 } from "./_generated/server";
-import { passesLayeredRateLimits } from "./lib/rateLimits";
+import { consumeEmailQuota } from "./lib/rateLimits";
 
 const CONSENT_VERSION = "2026-08-20";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -19,29 +18,6 @@ const MAX_LOCALE_LENGTH = 35;
 const PRODUCT_KEY = "a3dotlol";
 const PUBLISHER_KEY = "alec-schneider-solutions";
 const RETENTION_MS = 365 * DAY;
-
-const rateLimiter = new RateLimiter(components.rateLimiter, {
-  emailSignupBurst: {
-    kind: "fixed window",
-    period: MINUTE,
-    rate: 10,
-  },
-  emailSignupDaily: {
-    kind: "fixed window",
-    period: DAY,
-    rate: 500,
-  },
-  emailWithdrawalBurst: {
-    kind: "fixed window",
-    period: MINUTE,
-    rate: 10,
-  },
-  emailWithdrawalDaily: {
-    kind: "fixed window",
-    period: DAY,
-    rate: 1_000,
-  },
-});
 
 const commonArgs = {
   consentVersion: v.literal(CONSENT_VERSION),
@@ -318,9 +294,10 @@ async function enforceSubscribeRateLimits(
   ctx: MutationCtx,
   normalizedEmail: string,
 ) {
-  const withinRateLimits = await passesLayeredRateLimits(
-    () => rateLimiter.limit(ctx, "emailSignupBurst", { key: normalizedEmail }),
-    () => rateLimiter.limit(ctx, "emailSignupDaily"),
+  const withinRateLimits = await consumeEmailQuota(
+    ctx,
+    "signup",
+    normalizedEmail,
   );
 
   if (!withinRateLimits) {
@@ -332,12 +309,10 @@ async function enforceWithdrawalRateLimits(
   ctx: MutationCtx,
   normalizedEmail: string,
 ) {
-  const withinRateLimits = await passesLayeredRateLimits(
-    () =>
-      rateLimiter.limit(ctx, "emailWithdrawalBurst", {
-        key: normalizedEmail,
-      }),
-    () => rateLimiter.limit(ctx, "emailWithdrawalDaily"),
+  const withinRateLimits = await consumeEmailQuota(
+    ctx,
+    "withdrawal",
+    normalizedEmail,
   );
 
   if (!withinRateLimits) {

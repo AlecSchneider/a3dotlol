@@ -1,8 +1,7 @@
-import { DAY, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
 import { ConvexError, v } from "convex/values";
 import { DateTime, Effect, Result } from "effect";
 
-import { components, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
 import {
   action,
   internalAction,
@@ -15,20 +14,7 @@ import {
   discordContactLayer,
   submitContact,
 } from "./lib/contactWorkflow";
-import { passesLayeredRateLimits } from "./lib/rateLimits";
-
-const rateLimiter = new RateLimiter(components.rateLimiter, {
-  contactBurst: {
-    kind: "fixed window",
-    period: MINUTE,
-    rate: 10,
-  },
-  contactDaily: {
-    kind: "fixed window",
-    period: DAY,
-    rate: 200,
-  },
-});
+import { consumeEmailQuota } from "./lib/rateLimits";
 
 let cachedWebhookUrl: URL | null = null;
 
@@ -51,10 +37,7 @@ export const submit = action({
     runContact(
       submitContact(args, {
         withinRateLimits: (email) =>
-          passesLayeredRateLimits(
-            () => rateLimiter.limit(ctx, "contactBurst", { key: email }),
-            () => rateLimiter.limit(ctx, "contactDaily"),
-          ),
+          ctx.runMutation(internal.contact.consumeQuota, { email }),
         record: (messageId, deleteAfter) =>
           ctx.runMutation(internal.contact.recordDelivery, {
             messageId,
@@ -62,6 +45,13 @@ export const submit = action({
           }),
       }),
     ),
+});
+
+export const consumeQuota = internalMutation({
+  args: { email: v.string() },
+  returns: v.boolean(),
+  handler: (ctx, { email }): Promise<boolean> =>
+    consumeEmailQuota(ctx, "contact", email),
 });
 
 export const recordDelivery = internalMutation({

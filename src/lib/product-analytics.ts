@@ -211,6 +211,9 @@ export async function enableProductAnalytics() {
         api_host: POSTHOG_API_HOST,
         ui_host: POSTHOG_UI_HOST,
         defaults: "2026-06-25",
+        // Unused flag evaluation can send identity-bearing requests on reset,
+        // even after opt-out. Keep replay's separate remote configuration enabled.
+        advanced_disable_feature_flags: true,
         autocapture: {
           capture_copied_text: false,
           css_selector_ignorelist: [
@@ -313,30 +316,26 @@ export async function enableProductAnalytics() {
 
 export function disableProductAnalytics() {
   analyticsDesired = false;
-  clearPersistedPostHogState();
 
   if (posthogInstance && initialized) {
-    try {
-      posthogInstance.opt_out_capturing();
-      posthogInstance.stopSessionRecording();
-    } catch {
-      // Analytics failures must not affect consent controls or the page.
+    const posthog = posthogInstance;
+    for (const stop of [
+      () => posthog.opt_out_capturing(),
+      () => posthog.stopSessionRecording(),
+      // Opt-out clears persistence, not the SDK's in-memory anonymous identity.
+      () => posthog.reset(true),
+    ]) {
+      try {
+        stop();
+      } catch {
+        // One vendor/storage failure must not skip the other shutdown steps.
+      }
     }
-    return;
   }
 
-  if (posthogPromise) {
-    void posthogPromise
-      .then((posthog) => {
-        if (initialized) {
-          posthog.opt_out_capturing();
-          posthog.stopSessionRecording();
-        }
-      })
-      .catch(() => {
-        // The visitor is already opted out in local state.
-      });
-  }
+  // Pending imports check analyticsDesired before initialization. Do not queue
+  // a stale shutdown that could override a subsequent explicit acceptance.
+  clearPersistedPostHogState();
 }
 
 function clearPersistedPostHogState() {
@@ -358,8 +357,9 @@ function clearPersistedPostHogState() {
     `__ph_opt_in_out_${projectToken}`,
   ];
 
-  for (const storage of [window.localStorage, window.sessionStorage]) {
+  for (const name of ["localStorage", "sessionStorage"] as const) {
     try {
+      const storage = window[name];
       for (const key of keys) {
         storage.removeItem(key);
       }

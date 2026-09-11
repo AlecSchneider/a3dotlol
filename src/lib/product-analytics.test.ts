@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type TestInitOptions = {
+  advanced_disable_feature_flags?: boolean;
   autocapture?: unknown;
   before_send?: (event: unknown) => unknown;
   capture_dead_clicks?: unknown;
@@ -105,6 +106,7 @@ describe("product analytics", () => {
     expect(posthogMock.state.moduleLoads).toBe(1);
     expect(posthogMock.init).toHaveBeenCalledTimes(1);
     const initOptions = posthogMock.state.initOptions;
+    expect(initOptions?.advanced_disable_feature_flags).toBe(true);
     expect(posthogMock.init).toHaveBeenCalledWith(
       "test-project-token",
       initOptions,
