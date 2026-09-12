@@ -8,16 +8,17 @@ const sdk = vi.hoisted(() => ({
 }));
 vi.mock("posthog-js", () => ({ default: sdk }));
 
-import { enableProductAnalytics } from "./product-analytics";
-
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
 });
 
 async function sanitizer() {
+  // Keep the module's initialization state isolated as well as mock-call history.
+  vi.resetModules();
   vi.stubEnv("NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN", "test-project-token");
   vi.stubGlobal("window", { location: { origin: "https://a3.lol" } });
+  const { enableProductAnalytics } = await import("./product-analytics");
   await enableProductAnalytics();
   return (
     sdk.init.mock.calls[0] as unknown as [
