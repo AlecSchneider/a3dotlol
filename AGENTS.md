@@ -37,10 +37,13 @@ Do not widen a review into implementation or repeat passing gates without cause.
 
 Layout: `src/app` (Next.js), `convex` (backend).
 Use Node 24.x and the exact pnpm version in `package.json` (10.34.5).
+pnpm selects Node 24.20.0 via the repository's `useNodeVersion` setting.
 Install with `pnpm install --frozen-lockfile`; `pnpm-lock.yaml` is authoritative.
 Preserve the overrides and explicit dependency-script policy in `pnpm-workspace.yaml`.
 Commands: `pnpm run check`, `pnpm run lint`, `pnpm run test:once`,
 `pnpm run typecheck`, `pnpm run format:check`, `pnpm run build`.
+Run `pnpm run test:e2e` for routing, consent, navigation and form behavior.
+It builds with inert service configuration; never deploy its build artifact.
 Update `src/app/stack/page.tsx` when the documented technology stack changes.
 
 <!-- BEGIN:nextjs-agent-rules -->

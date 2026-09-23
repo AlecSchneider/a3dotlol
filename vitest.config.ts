@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   // Next preserves JSX for its own compiler; tests must lower imported TSX.
@@ -9,6 +9,7 @@ export default defineConfig({
     },
   },
   test: {
+    exclude: [...configDefaults.exclude, "e2e/**"],
     environment: "edge-runtime",
   },
 });

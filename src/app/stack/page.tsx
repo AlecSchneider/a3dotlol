@@ -78,6 +78,12 @@ const stackItems: StackItem[] = [
       "The database and backend for contact routing and consented email-update collection. Convex validates requests, enforces abuse limits, preserves consent history, schedules retention cleanup, and runs in US East.",
   },
   {
+    name: "Playwright",
+    href: "https://playwright.dev/",
+    description:
+      "Browser regression tests for desktop Chromium, mobile Chromium, and WebKit, covering navigation, consent, forms, and redirect security headers without contacting live services.",
+  },
+  {
     name: "Effect",
     href: "https://effect.website/",
     description:
