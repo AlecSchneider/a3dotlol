@@ -3,7 +3,7 @@
  * for Docker builds.
  */
 import "./src/env.js";
-import { links, youtubeHref } from "./src/lib/links.js";
+import { securityHeaders } from "./src/lib/security-headers.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -19,50 +19,12 @@ const config = {
   async headers() {
     return [
       {
-        headers: [
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), geolocation=(), microphone=()",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-        ],
+        headers: Object.entries(securityHeaders).map(([key, value]) => ({
+          key,
+          value,
+        })),
         source: "/(.*)",
       },
-    ];
-  },
-  async redirects() {
-    return [
-      {
-        source: "/youtube",
-        destination: youtubeHref,
-        permanent: false,
-      },
-      {
-        source: "/live",
-        destination: youtubeHref,
-        permanent: false,
-      },
-      {
-        source: "/tutorial",
-        destination: "https://www.youtube.com/watch?v=Y_NrWcWSqGQ",
-        permanent: false,
-      },
-      ...links.map((link) => ({
-        source: `/${link.label}`,
-        destination: link.label === "email" ? "/contact" : link.href,
-        permanent: false,
-      })),
     ];
   },
 };

@@ -30,4 +30,6 @@ jobs:
       - run: pnpm exec tsc --noEmit -p convex/tsconfig.json
       - run: pnpm run test:once
       - run: pnpm run format:check
-      - run: pnpm run build
+      - run: pnpm exec playwright install --with-deps chromium webkit
+      # E2E starts its own production build with inert service configuration.
+      - run: pnpm run test:e2e

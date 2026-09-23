@@ -5,7 +5,10 @@ on the homepage.
 
 ## Install and verify
 
-Use Node 24.x and pnpm 10.34.5, pinned in `package.json`. With pnpm or
+Use Node 24.x and pnpm 10.34.5, pinned in `package.json`. pnpm automatically
+selects Node 24.20.0 via `useNodeVersion` in `pnpm-workspace.yaml`; this does
+not change the host's global Node installation. `.nvmrc` also records that
+version for nvm users. With pnpm or
 Corepack available, verify `pnpm --version` from this directory, then run:
 
 ```sh
@@ -14,6 +17,8 @@ pnpm run check
 pnpm run test:once
 pnpm run format:check
 pnpm run build
+pnpm exec playwright install chromium webkit
+pnpm run test:e2e
 ```
 
 The build requires `NEXT_PUBLIC_CONVEX_URL`; CI uses a non-production placeholder.
@@ -22,6 +27,19 @@ security overrides and reviewed dependency-script approvals; do not approve all
 scripts or enable broad hoisting to work around install failures. Vite is a direct
 development dependency because the Convex test setup references `vite/client`.
 Backend deployment is separate from installing or building the website.
+
+Browser tests cover desktop Chromium, mobile Chromium and WebKit. They build
+and start their own local production server on port 4317 (override with
+`E2E_PORT`), refuse to reuse another process, and stop their server on exit.
+They use an inert Convex URL and synthetic analytics token; browser HTTP and
+WebSocket transports are intercepted so no form data or analytics reaches a
+provider. The suite covers redirect status/headers/query handling, navigation,
+consent and withdrawal, signup validation, and contact error recovery.
+Reports are in `playwright-report/`; failure traces are in `test-results/`.
+The E2E build replaces local `.next` output: never deploy that test artifact;
+release builds must be rebuilt with the authorized deployment configuration.
+CI runs the same checks and browser matrix. Live backend delivery is not
+validated by these local tests.
 
 ## Email signup setup
 
