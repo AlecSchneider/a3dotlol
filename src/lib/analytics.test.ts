@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   ANALYTICS_CONSENT_KEY,
   readAnalyticsConsent,
+  readAnalyticsConsentEvent,
   subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "./analytics";
@@ -64,5 +65,22 @@ describe("analytics consent storage synchronization", () => {
       "storage",
       expect.any(Function),
     );
+  });
+
+  it("accepts only the two consent choices from same-window events", () => {
+    expect(readAnalyticsConsentEvent({ detail: "accepted" })).toBe("accepted");
+    expect(readAnalyticsConsentEvent({ detail: "declined" })).toBe("declined");
+    for (const detail of [
+      "ACCEPTED",
+      "",
+      null,
+      undefined,
+      { choice: "accepted" },
+    ]) {
+      expect(readAnalyticsConsentEvent({ detail })).toBeNull();
+    }
+    expect(
+      readAnalyticsConsentEvent(new Event("analytics-consent-changed")),
+    ).toBeNull();
   });
 });

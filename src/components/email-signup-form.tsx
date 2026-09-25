@@ -6,6 +6,7 @@ import { useMutation } from "convex/react";
 
 import { api } from "../../convex/_generated/api";
 import { EMAIL_SIGNUP_CONFIG, getSignupLocale } from "~/lib/email-signup";
+import { readFormString } from "~/lib/form-data";
 import { captureProductEvent } from "~/lib/product-analytics";
 
 type RequestState = {
@@ -338,9 +339,4 @@ function ConsentChoice({
       </span>
     </label>
   );
-}
-
-function readFormString(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value : "";
 }

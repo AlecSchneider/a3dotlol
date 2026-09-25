@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             a3.lol, use its contact and support forms, or save email-update
             choices.
           </p>
-          <p>Last updated: 24 August 2026.</p>
+          <p>Last updated: 25 September 2026.</p>
         </>
       }
       title="Privacy notice"
@@ -76,8 +76,10 @@ export default function PrivacyPage() {
           delivery into a separate private Discord channel. The contact payload
           is not stored in the a3.lol Convex database. Convex stores only the
           Discord message identifier and deletion deadline so the Discord copy
-          can be deleted automatically after 90 days. Global, non-personal
-          counters are used to limit abuse.
+          can be deleted automatically after 90 days. To limit abuse, Convex
+          keeps global request counters and a per-address counter for up to one
+          minute after a submission; the per-address record is deleted
+          automatically when its one-minute window ends.
         </p>
         <p>
           Discord messages are scheduled for deletion after 90 days. A shorter

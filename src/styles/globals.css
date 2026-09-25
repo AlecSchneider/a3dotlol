@@ -137,6 +137,13 @@ body {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .homepage-fade {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 @keyframes fade-in-up {
   from {
     opacity: 0;

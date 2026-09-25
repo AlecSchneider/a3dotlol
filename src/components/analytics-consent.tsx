@@ -7,6 +7,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   ANALYTICS_CONSENT_CHANGED_EVENT,
   type AnalyticsConsentChoice,
+  readAnalyticsConsentEvent,
   subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "~/lib/analytics";
@@ -35,12 +36,8 @@ export function AnalyticsConsent() {
     let cancelled = false;
 
     const handleConsentChanged = (event: Event) => {
-      if (!(event instanceof CustomEvent)) {
-        return;
-      }
-
-      const nextConsent: unknown = event.detail;
-      if (nextConsent === "accepted" || nextConsent === "declined") {
+      const nextConsent = readAnalyticsConsentEvent(event);
+      if (nextConsent) {
         void (async () => {
           if (nextConsent === "accepted") {
             const enabled = await enableProductAnalytics();

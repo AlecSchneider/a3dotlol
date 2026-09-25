@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = "https://a3.lol";
+import { siteConfig } from "~/lib/seo";
+
+const siteUrl = siteConfig.url;
 
 const routes = [
   "",
