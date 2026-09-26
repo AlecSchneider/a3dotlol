@@ -22,7 +22,7 @@ export default function PrivacyPage() {
             a3.lol, use its contact and support forms, or save email-update
             choices.
           </p>
-          <p>Last updated: 25 September 2026.</p>
+          <p>Last updated: 26 September 2026.</p>
         </>
       }
       title="Privacy notice"
@@ -73,8 +73,9 @@ export default function PrivacyPage() {
         </p>
         <p>
           The form sends the request to Convex for validation and server-side
-          delivery into a separate private Discord channel. The contact payload
-          is not stored in the a3.lol Convex database. Convex stores only the
+          delivery into a separate private Discord channel. Apart from the
+          short-lived abuse counters described next, the contact payload is not
+          stored in the a3.lol Convex database, and Convex stores only the
           Discord message identifier and deletion deadline so the Discord copy
           can be deleted automatically after 90 days. To limit abuse, Convex
           keeps global request counters and a per-address counter for up to one
@@ -148,8 +149,12 @@ export default function PrivacyPage() {
           Convex stores the normalized email address, current choices, product
           and publisher keys, consent-copy version, source, browser locale,
           unverified status, and grant or withdrawal timestamps. A separate
-          audit history records only changes to each purpose. The address is not
-          sent to PostHog, Discord, or an email provider.
+          audit history records only changes to each purpose. To limit abuse,
+          signups and withdrawals also use global request counters and a
+          per-address counter for up to one minute, even if the address has no
+          saved choices; the per-address record is deleted automatically when
+          its one-minute window ends. The address is not sent to PostHog,
+          Discord, or an email provider.
         </p>
         <p>
           Collection is active, but email delivery is not. A submission remains
