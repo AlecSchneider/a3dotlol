@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { useAction } from "convex/react";
 
 import { api } from "../../convex/_generated/api";
+import { readFormString } from "~/lib/form-data";
 import { captureProductEvent } from "~/lib/product-analytics";
 
 type FormState = {
@@ -172,11 +173,6 @@ export function ContactForm({ formName }: { formName: "contact" | "support" }) {
       </p>
     </form>
   );
-}
-
-function readFormString(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value : "";
 }
 
 function FormField({

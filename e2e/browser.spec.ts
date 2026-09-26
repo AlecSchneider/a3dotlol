@@ -79,12 +79,23 @@ test("analytics stays off until consent, and withdrawal persists across navigati
   ).toHaveCount(0);
   expect(analyticsRequests).toBe(0);
   await page.goto("/cookies");
-  await page.getByRole("button", { name: "Allow analytics" }).click();
+  const status = page.getByTestId("analytics-consent-status");
+  const allow = page.getByRole("button", { name: "Allow analytics" });
+  const decline = page.getByRole("button", {
+    name: "Decline analytics",
+    exact: true,
+  });
+  await expect(status).toContainText("analytics is declined");
+  await expect(decline).toHaveAttribute("aria-pressed", "true");
+  await allow.click();
+  await expect(status).toContainText("analytics is allowed");
+  await expect(allow).toHaveAttribute("aria-pressed", "true");
+  await expect(decline).toHaveAttribute("aria-pressed", "false");
   await expect.poll(() => analyticsRequests).toBeGreaterThan(0);
-  await page
-    .getByRole("button", { name: "Decline analytics", exact: true })
-    .click();
+  await decline.click();
+  await expect(status).toContainText("analytics is declined");
   await page.reload();
+  await expect(status).toContainText("analytics is declined");
   const afterWithdrawal = analyticsRequests;
   await page.goto("/about");
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();

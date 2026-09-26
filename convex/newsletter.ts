@@ -53,7 +53,7 @@ export const subscribe = mutation({
       throw new ConvexError("Choose at least one email purpose.");
     }
 
-    await enforceSubscribeRateLimits(ctx, normalizedEmail);
+    await enforceEmailQuota(ctx, "signup", normalizedEmail);
 
     const now = Date.now();
     const contact = await findOrCreateContact(ctx, normalizedEmail, now);
@@ -173,7 +173,7 @@ export const withdraw = mutation({
       throw new ConvexError("Consent version is invalid.");
     }
 
-    await enforceWithdrawalRateLimits(ctx, normalizedEmail);
+    await enforceEmailQuota(ctx, "withdrawal", normalizedEmail);
 
     const contact = await ctx.db
       .query("emailContacts")
@@ -290,32 +290,12 @@ function normalizeLocale(value: string | undefined) {
   return locale;
 }
 
-async function enforceSubscribeRateLimits(
+async function enforceEmailQuota(
   ctx: MutationCtx,
+  kind: "signup" | "withdrawal",
   normalizedEmail: string,
 ) {
-  const withinRateLimits = await consumeEmailQuota(
-    ctx,
-    "signup",
-    normalizedEmail,
-  );
-
-  if (!withinRateLimits) {
-    throw new ConvexError("Too many requests. Please wait and try again.");
-  }
-}
-
-async function enforceWithdrawalRateLimits(
-  ctx: MutationCtx,
-  normalizedEmail: string,
-) {
-  const withinRateLimits = await consumeEmailQuota(
-    ctx,
-    "withdrawal",
-    normalizedEmail,
-  );
-
-  if (!withinRateLimits) {
+  if (!(await consumeEmailQuota(ctx, kind, normalizedEmail))) {
     throw new ConvexError("Too many requests. Please wait and try again.");
   }
 }

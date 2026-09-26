@@ -46,7 +46,6 @@ export default function CookiesPage() {
           copied text, network bodies or headers, console logs, and raw error
           messages are not sent.
         </p>
-        <AnalyticsPreferences />
       </section>
 
       <section>
@@ -57,6 +56,7 @@ export default function CookiesPage() {
           PostHog&apos;s local anonymous state in this browser; it does not
           alter anonymous reports already created.
         </p>
+        <AnalyticsPreferences />
       </section>
     </LegalPage>
   );

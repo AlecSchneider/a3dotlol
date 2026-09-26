@@ -50,6 +50,14 @@ export function readAnalyticsConsent(
   }
 }
 
+// Reads the choice carried by a same-window consent change event.
+export function readAnalyticsConsentEvent(
+  event: Pick<CustomEvent, "detail"> | Event,
+): AnalyticsConsentChoice | null {
+  const detail: unknown = "detail" in event ? event.detail : undefined;
+  return detail === "accepted" || detail === "declined" ? detail : null;
+}
+
 export function writeAnalyticsConsent(
   storage: Pick<Storage, "setItem">,
   choice: AnalyticsConsentChoice,

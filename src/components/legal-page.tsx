@@ -5,15 +5,21 @@ export function LegalPage({
   children,
   eyebrow,
   intro,
+  lang,
   title,
 }: {
   children: ReactNode;
   eyebrow: string;
   intro?: ReactNode;
+  // Pages written in another language than the site's `en` root, e.g. German.
+  lang?: string;
   title: string;
 }) {
   return (
-    <main className="min-h-screen bg-[var(--page)] px-6 py-12 text-[var(--text-primary)]">
+    <main
+      className="min-h-screen bg-[var(--page)] px-6 py-12 text-[var(--text-primary)]"
+      lang={lang}
+    >
       <div className="mx-auto max-w-2xl">
         <Link
           className="text-sm text-[var(--text-muted)] transition hover:text-[var(--text-primary)]"

@@ -13,6 +13,7 @@ export default function ImpressumPage() {
     <LegalPage
       eyebrow="Legal notice"
       intro={<p>Angaben gemäß § 5 Digitale-Dienste-Gesetz (DDG).</p>}
+      lang="de"
       title="Impressum"
     >
       <section>

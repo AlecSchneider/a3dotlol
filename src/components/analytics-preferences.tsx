@@ -1,12 +1,56 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import {
   ANALYTICS_CONSENT_CHANGED_EVENT,
+  type AnalyticsConsentChoice,
+  readAnalyticsConsentEvent,
+  subscribeToAnalyticsConsentStorage,
   writeAnalyticsConsent,
 } from "~/lib/analytics";
 
+const statusText: Record<AnalyticsConsentChoice | "none", string> = {
+  accepted: "Current setting: analytics is allowed in this browser.",
+  declined: "Current setting: analytics is declined in this browser.",
+  none: "Current setting: no choice has been saved in this browser yet.",
+};
+
+const choiceButtonClass =
+  "rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--text-primary)] transition hover:border-white/30 aria-pressed:border-cyan-300/70";
+
 export function AnalyticsPreferences() {
-  const saveConsent = (nextConsent: "accepted" | "declined") => {
+  // Undefined until hydration so the server and first client render match.
+  const [consent, setConsent] = useState<
+    AnalyticsConsentChoice | null | undefined
+  >(undefined);
+
+  useEffect(() => {
+    const unsubscribeFromStorage = subscribeToAnalyticsConsentStorage(
+      window,
+      setConsent,
+    );
+    const handleConsentChanged = (event: Event) => {
+      const nextConsent = readAnalyticsConsentEvent(event);
+      if (nextConsent) {
+        setConsent(nextConsent);
+      }
+    };
+
+    window.addEventListener(
+      ANALYTICS_CONSENT_CHANGED_EVENT,
+      handleConsentChanged,
+    );
+    return () => {
+      unsubscribeFromStorage();
+      window.removeEventListener(
+        ANALYTICS_CONSENT_CHANGED_EVENT,
+        handleConsentChanged,
+      );
+    };
+  }, []);
+
+  const saveConsent = (nextConsent: AnalyticsConsentChoice) => {
     try {
       writeAnalyticsConsent(window.localStorage, nextConsent);
     } catch {
@@ -27,20 +71,29 @@ export function AnalyticsPreferences() {
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
         <button
-          className="rounded-full border border-white/15 px-4 py-2 text-sm text-[var(--text-primary)] transition hover:border-white/30"
+          aria-pressed={consent === "accepted"}
+          className={choiceButtonClass}
           onClick={() => saveConsent("accepted")}
           type="button"
         >
           Allow analytics
         </button>
         <button
-          className="rounded-full border border-white/10 px-4 py-2 text-sm transition hover:border-white/20"
+          aria-pressed={consent === "declined"}
+          className={choiceButtonClass}
           onClick={() => saveConsent("declined")}
           type="button"
         >
           Decline analytics
         </button>
       </div>
+      <p
+        aria-live="polite"
+        className="mt-4 min-h-5 text-xs text-[var(--text-muted)]"
+        data-testid="analytics-consent-status"
+      >
+        {consent === undefined ? "" : statusText[consent ?? "none"]}
+      </p>
     </div>
   );
 }
